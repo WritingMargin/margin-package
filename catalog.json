@@ -38,7 +38,7 @@
         "Saved scenes and animation clips for readers",
         "Bundled Node.js and Three.js runtime"
       ],
-      "releaseNotes": "Includes the complete scene editor, code execution, saved reader views, and animation controls.",
+      "releaseNotes": "Includes the complete scene editor, code execution, saved reader views, and animation controls. Linux x86-64 requires glibc (tested on Debian bookworm); Alpine/musl is not supported.",
       "packages": [
         {
           "os": "darwin",
@@ -46,6 +46,13 @@
           "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.2.0/three-scene-0.2.0-darwin-arm64.margin-plugin",
           "sha256": "7b36409e48de7bdaad78294933d4ede8b76d33c18321256254d6e5df6b2535ba",
           "size": 124774470
+        },
+        {
+          "os": "linux",
+          "arch": "amd64",
+          "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.2.0/three-scene-0.2.0-linux-amd64.margin-plugin",
+          "sha256": "7217dd87c4c832413edb5d96494905a409f3854ef9cac5e382440c78426774d2",
+          "size": 129537208
         }
       ]
     }

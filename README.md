@@ -20,6 +20,10 @@ Plugins run as trusted server code; they are not a sandbox for untrusted authors
 | [Jupyter notebook](examples/plugins/python-notebook/) | Notebook import/export, editable cells, Python execution, and saved outputs for readers. Includes Python and Jupyter dependencies. |
 | [Three.js scenes](examples/plugins/three-scene/) | A scene editor, Three.js execution, and interactive 3D views. Includes Node.js and Three.js. |
 
+Verified packages currently cover macOS Apple silicon for both plugins, plus
+Linux x86-64 for Three.js. Linux packages require glibc (tested on Debian
+bookworm); Alpine/musl is not supported.
+
 Only platforms with a verified release appear as installable. Unsupported engines
 still show the plugin with an explanation. These plugins require Margin's optional
 plugin implementation; they do not work in earlier releases without plugin support.
