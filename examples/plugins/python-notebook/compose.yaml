@@ -1,0 +1,19 @@
+# Optional service only. Margin's normal compose does not install or start this plugin.
+services:
+  python-notebook:
+    build: .
+    environment:
+      MARGIN_PLUGIN_TOKEN: ${MARGIN_PLUGIN_TOKEN:?Set a random service secret of at least 32 characters}
+    ports:
+      - "127.0.0.1:8101:8101"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=256m,uid=10001,gid=10001,mode=1777
+      - /home/margin:rw,nosuid,nodev,size=16m,uid=10001,gid=10001,mode=700
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    stop_grace_period: 15s

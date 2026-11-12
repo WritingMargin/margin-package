@@ -1,0 +1,16 @@
+{
+  "name": "margin-python-notebook-ui",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test *.test.mjs *.test.ts",
+    "build:ui": "node build-ui.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

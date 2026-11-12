@@ -1,0 +1,11 @@
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+dist/
+artifacts/
+*.margin-plugin
+.env
+.env.*
+!.env.example
+.DS_Store

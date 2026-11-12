@@ -1,0 +1,30 @@
+// THREE, scene, camera, target and animations are provided by Margin.
+scene.background = new THREE.Color(0x101827);
+camera.position.set(4, 2.8, 5);
+target.set(0, 0.5, 0);
+
+scene.add(new THREE.AmbientLight(0xffffff, 1.4));
+const light = new THREE.DirectionalLight(0xffffff, 3);
+light.position.set(4, 6, 3);
+scene.add(light);
+
+const sculpture = new THREE.Mesh(
+  new THREE.TorusKnotGeometry(0.75, 0.22, 48, 8),
+  new THREE.MeshStandardMaterial({ color: 0x6ee7b7, roughness: 0.3, metalness: 0.35 })
+);
+sculpture.name = "sculpture";
+sculpture.position.y = 0.75;
+scene.add(sculpture);
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(8, 8),
+  new THREE.MeshStandardMaterial({ color: 0x25334b, roughness: 0.9 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -0.5;
+scene.add(floor);
+
+animations.push(new THREE.AnimationClip("Turn slowly", 8, [
+  new THREE.NumberKeyframeTrack("sculpture.rotation[y]", [0, 8], [0, Math.PI * 2])
+]));
+console.log("A real Three.js torus knot, built from code.");

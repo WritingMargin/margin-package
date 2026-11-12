@@ -1,0 +1,22 @@
+{
+  "name": "margin-three-scene",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test *.test.mjs *.test.ts",
+    "check": "margin-plugin-check plugin.mjs",
+    "dev": "node --watch server.mjs",
+    "pack": "node build.mjs"
+  },
+  "dependencies": {
+    "@margin/plugin-sdk": "file:../../../packages/plugin-sdk",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

@@ -1,0 +1,40 @@
+import { build } from "esbuild";
+import { mkdtemp, mkdir, copyFile, writeFile, readFile, rm } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { pack } from "../../../packages/plugin-sdk/pack.mjs";
+import plugin from "./plugin.mjs";
+import { inlineDocument } from "./inline-document.mjs";
+const here = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const output = resolve(process.argv[2] ?? `${plugin.manifest.id}-${plugin.manifest.version}-${process.platform}-${process.arch === "x64" ? "amd64" : process.arch}.margin-plugin`);
+const root = await mkdtemp(join(tmpdir(), "margin-three-build-"));
+try {
+  const payload = join(root, "payload");
+  await mkdir(join(payload, "app"), { recursive: true });
+  await mkdir(join(payload, "runtime"));
+  await mkdir(join(payload, "ui"));
+  const options = { bundle: true, platform: "node", format: "esm", target: "node24", sourcemap: false, legalComments: "inline" };
+  await build({ ...options, entryPoints: [join(here, "server.mjs")], outfile: join(payload, "app/server.mjs") });
+  await build({ ...options, entryPoints: [join(here, "worker.mjs")], outfile: join(payload, "app/worker.mjs") });
+  const browser = await build({ bundle: true, platform: "browser", format: "iife", target: "es2022", minify: true, write: false, legalComments: "none", entryPoints: [join(here, "ui/main.mjs")] });
+  const script = browser.outputFiles[0].text;
+  const selectCSS = await readFile(join(here, "../../../packages/plugin-sdk/select.css"), "utf8");
+  const css = selectCSS + "\n" + await readFile(join(here, "ui/scene.css"), "utf8");
+  const template = await readFile(join(here, "ui/scene.html"), "utf8");
+  const html = inlineDocument(template, script, css);
+  await writeFile(join(payload, "ui/scene.html"), html);
+  await copyFile(process.execPath, join(payload, "runtime/node"));
+  const licenseCandidates = [join(dirname(process.execPath), "../LICENSE"), join(dirname(process.execPath), "LICENSE")];
+  let nodeLicense;
+  for (const candidate of licenseCandidates) { try { nodeLicense = await readFile(candidate); break; } catch { /* Try the next distribution path. */ } }
+  if (!nodeLicense) throw new Error("Keep the official Node distribution LICENSE alongside its binary before packaging.");
+  await writeFile(join(payload, "runtime/LICENSE"), nodeLicense);
+  await copyFile(join(dirname(dirname(require.resolve("three"))), "LICENSE"), join(payload, "app/THREE-LICENSE"));
+  const manifest = join(root, "manifest.json");
+  await writeFile(manifest, JSON.stringify(plugin.manifest));
+  await pack(["--directory", payload, "--manifest", manifest, "--executable", "runtime/node", "--args", '["app/server.mjs"]', "--output", output]);
+  console.log(`Three.js package ready: ${output}`);
+} finally { await rm(root, { recursive: true, force: true }); }

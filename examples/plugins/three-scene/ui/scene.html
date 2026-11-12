@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three.js scene</title>
+</head>
+<body>
+<main id="app" class="scene-app" aria-label="Three.js scene">
+  <header class="heading">
+    <span class="scene-icon" aria-hidden="true">◇</span>
+    <div><p class="eyebrow">EXPLORE THE IDEA</p><h1>Three.js scene</h1></div>
+    <span id="mode" class="mode"></span>
+  </header>
+  <section id="editor" class="editor" hidden>
+    <div class="editor-label"><label for="code">Your scene</label><span>JavaScript · THREE is provided</span></div>
+    <textarea id="code" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="48000" aria-describedby="code-help"></textarea>
+    <p id="code-help" class="hint">Add objects to <code>scene</code>, aim <code>camera</code> with <code>target</code>, and add clips to <code>animations</code>.</p>
+  </section>
+  <div id="execution" class="execution" hidden>
+    <p id="run-hint">Run your code to explore the result.</p>
+    <div class="buttons"><button id="run" class="primary" type="button">Run scene</button><button id="stop" type="button" hidden>Stop</button><button id="save" type="button" hidden disabled>Save scene</button></div>
+  </div>
+  <p id="status" class="message" role="status" aria-live="polite">Opening scene…</p>
+  <p id="error" class="message error" role="alert" hidden></p>
+  <section id="result" class="result" hidden>
+    <div id="canvas" class="canvas"></div>
+    <div class="viewer-tools"><p>Drag to orbit · Scroll to zoom</p><div class="buttons"><button id="reset" type="button">Reset view</button><button id="play" type="button" hidden>Play animation</button></div></div>
+    <label id="clip-label" class="clip-label" hidden>Animation <select id="clip" class="margin-select"></select></label>
+  </section>
+  <details id="logs" class="details" hidden><summary>Console output <span id="log-count"></span></summary><pre id="log-text"></pre></details>
+  <details id="source" class="details" hidden><summary>Source code <span>JavaScript</span></summary><pre id="source-text"></pre></details>
+</main>
+</body>
+</html>

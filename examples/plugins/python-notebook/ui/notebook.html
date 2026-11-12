@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Jupyter notebook</title>
+  </head>
+  <body>
+    <main id="app" aria-label="Jupyter notebook">
+      <header class="heading">
+        <span class="icon" aria-hidden="true">▤</span>
+        <div>
+          <p class="eyebrow">EXPLORE THE IDEA</p>
+          <h1>Jupyter notebook <small id="count"></small></h1>
+        </div>
+        <span id="mode" class="mode"></span>
+      </header>
+      <div class="file-bar">
+        <div class="buttons">
+          <button id="import" type="button" hidden>Import .ipynb</button
+          ><button id="new" type="button" hidden>New notebook</button
+          ><button id="export" type="button">Export .ipynb</button>
+        </div>
+        <span id="language" class="hint">Python</span>
+      </div>
+      <div id="execution" class="execution" hidden>
+        <div class="buttons">
+          <button id="run-all" class="primary" type="button">
+            Run all cells</button
+          ><button id="stop" type="button" hidden>Stop</button
+          ><button id="restart" type="button">Restart kernel</button
+          ><button id="save" type="button" hidden disabled>Save outputs</button>
+        </div>
+        <p id="execution-hint" class="hint"></p>
+      </div>
+      <p id="status" class="message" role="status" aria-live="polite">
+        Opening notebook…
+      </p>
+      <p id="error" class="message error" role="alert" hidden></p>
+      <section id="cells" aria-label="Notebook cells"></section>
+      <div id="add" class="add-bar" hidden>
+        <span>Add a cell</span
+        ><button data-add="code" type="button">+ Code</button
+        ><button data-add="markdown" type="button">+ Markdown</button
+        ><button data-add="raw" type="button">+ Raw</button>
+      </div>
+    </main>
+  </body>
+</html>

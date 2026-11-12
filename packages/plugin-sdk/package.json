@@ -1,0 +1,44 @@
+{
+  "name": "@margin/plugin-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build optional Margin plugin services. Local development package; not published to npm.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.mts",
+      "import": "./index.mjs"
+    },
+    "./browser": {
+      "types": "./browser.d.mts",
+      "import": "./browser.mjs"
+    },
+    "./select.css": "./select.css"
+  },
+  "bin": {
+    "margin-plugin-create": "./create.mjs",
+    "margin-plugin-check": "./check.mjs",
+    "margin-plugin-pack": "./pack.mjs"
+  },
+  "scripts": {
+    "test": "node --test *.test.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "index.d.mts",
+    "browser.mjs",
+    "browser.d.mts",
+    "schema.mjs",
+    "server.mjs",
+    "create.mjs",
+    "create-block.mjs",
+    "check.mjs",
+    "README.md",
+    "pack.mjs",
+    "archive.mjs",
+    "select.css"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "plugins": [
+    {
+      "id": "python-notebook",
+      "name": "Jupyter notebook",
+      "description": "Turn your guides into working notebooks. Write and run Python cells, import a notebook, and share saved results with readers.",
+      "version": "0.3.0",
+      "publisher": "WritingMargin",
+      "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/python-notebook",
+      "features": [
+        "Notebook editor with code, Markdown and raw cells",
+        "Import and export Jupyter notebooks",
+        "Run Python with a bundled interpreter and Jupyter kernel",
+        "Share saved text, errors and image outputs with readers"
+      ],
+      "releaseNotes": "Includes the complete notebook editor and reader, native notebook import, and managed kernel cleanup when leaving the page.",
+      "packages": [
+        {
+          "os": "darwin",
+          "arch": "arm64",
+          "url": "https://github.com/WritingMargin/margin-package/releases/download/python-notebook-v0.3.0/python-notebook-0.3.0-darwin-arm64.margin-plugin",
+          "sha256": "bd35e055463b26bac7df5f8359025638d1acfc5a17398ccf6e1cf817d9e0aaa7",
+          "size": 110786945
+        }
+      ]
+    },
+    {
+      "id": "three-scene",
+      "name": "Three.js scenes",
+      "description": "Bring an idea into three dimensions. Write Three.js code, preview a scene, and let readers explore it in your article.",
+      "version": "0.2.0",
+      "publisher": "WritingMargin",
+      "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/three-scene",
+      "features": [
+        "Plugin-owned Three.js code editor",
+        "Interactive orbit, zoom and reset controls",
+        "Saved scenes and animation clips for readers",
+        "Bundled Node.js and Three.js runtime"
+      ],
+      "releaseNotes": "Includes the complete scene editor, code execution, saved reader views, and animation controls.",
+      "packages": [
+        {
+          "os": "darwin",
+          "arch": "arm64",
+          "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.2.0/three-scene-0.2.0-darwin-arm64.margin-plugin",
+          "sha256": "7b36409e48de7bdaad78294933d4ede8b76d33c18321256254d6e5df6b2535ba",
+          "size": 124774470
+        }
+      ]
+    }
+  ]
+}
