@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: '24'
       - run: node scripts/validate-catalog.mjs
+      - run: python3 -m unittest discover -s examples/plugins/python-notebook -p test_build_package.py
       - run: npm ci --prefix examples/plugins/python-notebook
       - run: npm ci --prefix examples/plugins/three-scene
       - run: node --test packages/plugin-sdk/*.test.mjs

@@ -11,6 +11,13 @@ blocks and reader views. The manifest declares each block, and its HTML is
 hashed with the rest of the payload. See [plugin-owned blocks](plugin-blocks.md)
 for the SDK, file paths and isolated browser bridge.
 
+Owners can install official packages through **Browse plugins**, or use
+**Upload plugin** for a local archive. The official catalog is maintained in
+[WritingMargin/margin-package](https://github.com/WritingMargin/margin-package),
+with per-platform archives attached to versioned GitHub Releases. Directory
+downloads additionally verify the complete archive's reviewed SHA-256 and byte
+size before applying this package contract.
+
 Managed packages currently require a **single Margin engine process**. Do not
 run several engine replicas against the same plugin records: each replica could
 restore the package independently and replace its connection details. Use
@@ -217,10 +224,7 @@ committed published article/guide revisions, including updates. Its input is:
 
 All six post fields are strings. Hooks receive metadata, not article bodies.
 Delivery retries may repeat an event; use `eventId` to make handling idempotent
-and scope state to `context.publicationId` and `context.actorId`. The
-[publication log example](../examples/plugins/publication-log/README.md) builds
-an installable package, stores complete per-event records, and offers a recent
-publications action for verification.
+and scope state to `context.publicationId` and `context.actorId`. Store durable event records in the supplied plugin data directory.
 
 Only enabled plugins receive new events. The queue commits with the published
 revision and retries failed deliveries up to three attempts. Package updates

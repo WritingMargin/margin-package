@@ -10,12 +10,12 @@ for (const plugin of catalog.plugins) {
   assert(/^[a-z0-9][a-z0-9-]{0,63}$/.test(plugin.id));
   assert(!ids.has(plugin.id), `Duplicate plugin ${plugin.id}`);
   ids.add(plugin.id);
-  for (const key of ['name', 'description', 'version', 'publisher', 'homepage', 'releaseNotes']) {
-    assert(typeof plugin[key] === 'string' && plugin[key].length > 0 && plugin[key].length <= 4096, `${plugin.id}.${key}`);
+  for (const [key, limit] of Object.entries({name:120, description:3000, version:100, publisher:120, homepage:2048, releaseNotes:12000})) {
+    assert(typeof plugin[key] === 'string' && plugin[key].trim().length > 0 && Buffer.byteLength(plugin[key]) <= limit, `${plugin.id}.${key}`);
   }
   assert.equal(new URL(plugin.homepage).protocol, 'https:');
-  assert(Array.isArray(plugin.features) && plugin.features.length > 0 && plugin.features.every(value => typeof value === 'string' && value.length <= 200));
-  assert(Array.isArray(plugin.packages) && plugin.packages.length > 0);
+  assert(Array.isArray(plugin.features) && plugin.features.length > 0 && plugin.features.length <= 32 && plugin.features.every(value => typeof value === 'string' && value.trim().length > 0 && Buffer.byteLength(value) <= 200));
+  assert(Array.isArray(plugin.packages) && plugin.packages.length > 0 && plugin.packages.length <= 8);
   const targets = new Set();
   for (const asset of plugin.packages) {
     assert(['linux', 'darwin'].includes(asset.os));

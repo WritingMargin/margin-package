@@ -21,6 +21,11 @@ def copy_distribution(source, target):
             raise ValueError(f'Distribution link escapes its root: {path}')
     def ignore(directory, names):
         excluded = {name for name in names if name == '__pycache__' or name.endswith(('.pyc', '.pyo'))}
+        if Path(directory) == source / 'share':
+            # Linux standalone builds include terminal aliases differing only in
+            # case. Notebook kernels do not use the interactive terminal database;
+            # omit it so archives remain portable to case-insensitive filesystems.
+            excluded.add('terminfo')
         if Path(directory) == source / 'bin':
             excluded.update(name for name in names if name != f'python{sys.version_info.major}.{sys.version_info.minor}')
         return excluded

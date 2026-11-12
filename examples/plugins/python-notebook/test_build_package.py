@@ -60,6 +60,18 @@ class BuildPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'escapes'):
                 builder.copy_distribution(source, root / 'target')
 
+    def test_copy_omits_unused_linux_terminal_database_but_keeps_licenses(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / 'source'
+            (source / 'share' / 'terminfo' / '2').mkdir(parents=True)
+            (source / 'share' / 'terminfo' / '2' / '2621a').write_text('terminal')
+            (source / 'share' / 'LICENSE').write_text('distribution license')
+            target = root / 'target'
+            builder.copy_distribution(source, target)
+            self.assertFalse((target / 'share' / 'terminfo').exists())
+            self.assertEqual((target / 'share' / 'LICENSE').read_text(), 'distribution license')
+
 
 if __name__ == '__main__':
     unittest.main()

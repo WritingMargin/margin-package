@@ -1,7 +1,7 @@
 # Build and install Margin plugins
 
 A Margin plugin is an optional installable package containing its code and
-runtime. The owner uploads it, reviews its actions and event subscriptions, then
+runtime. The owner installs it from the directory or uploads it, reviews its actions and event subscriptions, then
 enables it. Margin starts and stops the process. The engine host needs no
 separate Node/Python installation, package manager, or plugin endpoint setup.
 
@@ -20,12 +20,14 @@ source and distributor of a package before enabling it.
 
 Use **Settings → Integrations → Plugins** while signed in as owner:
 
-1. Select a `.margin-plugin` archive matching the host target displayed by Margin.
+1. Choose **Browse plugins** for the official directory, or **Upload plugin** for
+   a `.margin-plugin` archive matching the host target displayed by Margin.
 2. Install it. The engine checks paths, hashes, target and manifest before storing
    it disabled; installation executes no plugin code.
 3. Review capabilities, actions and event subscriptions, then enable. Margin
    starts the bundled executable with a private credential and local connection.
-4. Use **Manage → Update package** to replace its code while retaining its data.
+4. Review a newer release in **Browse plugins**, or use **Manage → Update package**
+   for a local archive, to replace its code while retaining its data.
 5. Disable to stop its process. Remove to delete the package and its data.
 
 Enabled packages start with the engine and stop on shutdown. A failed runtime is
@@ -40,17 +42,40 @@ service connection remains available. Connect its endpoint and dedicated token,
 review and enable it. Refreshing that service's manifest disables it for review.
 Removing an external connection does not stop the separately managed service.
 
+## Official plugin directory
+
+The directory is published in
+[WritingMargin/margin-package](https://github.com/WritingMargin/margin-package).
+Its reviewed `catalog.json` lists Jupyter notebook and Three.js scene packages;
+the runtime archives live in versioned GitHub Releases. Browse shows the
+publisher, version, features and compatible download size. Margin chooses the
+package for the **engine server**, not the browser's platform. Plugins without a
+verified build for that server remain visible but cannot be installed there.
+
+Directory installation runs on the server. It downloads the reviewed release,
+checks its full SHA-256 and byte size, validates its archive and manifest, then
+uses the same managed installer as a manual upload. Browsing never executes
+plugin code. Installation leaves the plugin disabled until the owner enables it.
+Once enabled, choose **Plugin block** in the editor to use its supplied blocks.
+
+The engine needs outbound HTTPS access to GitHub for browsing and downloading.
+Manual package uploads remain available without the directory. Catalog or
+download failures do not modify installed plugins. If a release changes after
+review, reload its details before retrying. Directory updates use the same
+version preconditions, managed-data snapshot and rollback as uploaded updates.
+Updates are owner-initiated; Margin does not silently install catalog changes.
+
+Operators may set `MARGIN_PLUGIN_CATALOG_URL` to an HTTPS catalog mirror without
+credentials, a query string or redirects. Package downloads still must name
+versioned releases in the official `WritingMargin/margin-package` repository.
+
 Examples:
 
-- [Publication log package](../examples/plugins/publication-log/README.md): a
-  self-contained Node plugin that handles `post.published` and records metadata.
 - [Python notebook package](../examples/plugins/python-notebook/README.md):
   a standalone Python interpreter with Jupyter dependencies and private kernels.
   The package build and engine execution are verified on macOS arm64.
 - [Three.js scene package](../examples/plugins/three-scene/README.md): bundled
   Node, Three.js, a custom block editor and an interactive saved-scene reader UI.
-- [Text tools service](../examples/plugins/text-tools/README.md): a small external
-  service demonstrating the wire protocol without an SDK.
 
 The notebook package supplies its editor and saved-output reader. If it is
 disabled or absent, Margin preserves the original notebook source as a fallback.
@@ -152,6 +177,9 @@ tokens cannot manage or run plugins in this first version.
 | Route | Purpose |
 | --- | --- |
 | `GET /api/plugins` | List connections and validated manifests; tokens are omitted |
+| `GET /api/plugins/directory` | Read the official catalog with the package matching this engine |
+| `POST /api/plugins/directory/install/{id}` | Install reviewed `{version, sha256}`; initially disabled |
+| `POST /api/plugins/directory/update/{id}` | Replace with reviewed `{version, sha256}` and installed-version `If-Match`; preserve managed data |
 | `POST /api/plugins` | Connect `{endpoint, token?}`; initially disabled |
 | `PATCH /api/plugins/{id}` | Update `{enabled?, token?}` |
 | `POST /api/plugins/{id}/check` | Check service manifest and report available changes |

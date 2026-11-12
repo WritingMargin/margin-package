@@ -138,8 +138,11 @@ package and its data snapshot and tries to restart the previous enabled version.
 An interrupted update is recovered before packages start on the next engine
 launch. Updates need temporary disk space for the replacement and rollback copy.
 Removing a plugin still deletes its data; it is no longer necessary for updates.
-There is no package marketplace or automatic update feed yet. See the
-[update contract](plugin-packages.md#update-an-installed-package).
+Official releases are also available through **Browse plugins**, backed by the
+[WritingMargin package directory](https://github.com/WritingMargin/margin-package).
+Directory updates use the same data-preserving flow and require owner review;
+there is no automatic background installation. Private packages can still be
+uploaded directly. See the [update contract](plugin-packages.md#update-an-installed-package).
 
 ## Optional local development loop
 
