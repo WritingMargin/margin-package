@@ -26,6 +26,13 @@ The ZIP contains exactly `margin-package.json` metadata (`packageVersion: "margi
 
 For server work, declare an action with JSON input/output schemas and `http: {method: "POST", path: "/fixed/path", reader: false}`. GET accepts an empty input object. The owner supplies a public HTTPS base URL and optional credentials in Margin settings. The bridge sends raw JSON input and validates the raw JSON object response. It never accepts a URL or credential from the iframe. Public actions need `reader: true`, block inclusion and owner reader opt-in; the effective allowlist arrives as `context.actions` / `context.readerActions`.
 
-See `examples/plugins/http-playground` for a reader API block, `three-scene` for local worker execution, and `python-notebook` for a separately deployed notebook service. Jupyter's service authenticates the bridge and uses server-derived `X-Margin-Actor-Id` / `X-Margin-Publication-Id` headers to scope sessions.
+See `examples/plugins/three-scene` for browser worker execution and
+`examples/plugins/python-notebook` for a notebook UI connected to a separately
+hosted Python service. The service authenticates the bridge and uses server-derived
+`X-Margin-Actor-Id` / `X-Margin-Publication-Id` headers to scope sessions.
 
-The optional `defineAction` handler and `startPlugin` utilities remain for independently hosted service examples and tests. They are never installed or launched by a browser package. New services can use any language or framework and only need the declared HTTP contract.
+`defineAction` and `definePlugin` describe metadata only. Actions require an HTTP
+mapping; JavaScript handler functions and server helpers are not supported.
+The SDK accepts only the current contract. Blocks use canonical
+`plugin:<plugin-id>:<block-id>` fences, and the host must supply both `actions` and
+`readerActions` arrays. There are no language aliases or older-host fallbacks.

@@ -99,13 +99,13 @@ export function validateValue(schema, value, path = "input") {
   }
   return value;
 }
-function validateAction(action) {
+export function validateAction(action) {
   keys(action, ["name", "title", "description", "inputSchema", "outputSchema", "http"], "action");
   text(action.name, 1, 80, "action.name");
   if (!actionName.test(action.name)) reject("Action names use lowercase letters, numbers, dots or hyphens.");
   text(action.title, 1, 120, "action.title");
-  text(action.description, 0, 2000, "action.description");
-  if (action.http !== undefined) validateHTTP(action.http);
+  if (action.description !== undefined) text(action.description, 0, 2000, "action.description");
+  validateHTTP(action.http);
   for (const schema of [action.inputSchema, action.outputSchema]) {
     if (schema?.type !== "object") reject("Action inputSchema and outputSchema must have type object.");
     validateSchema(schema);
@@ -141,7 +141,7 @@ function validateBlocks(blocks, actions) {
   }
 }
 function validateBlock(block, actions) {
-  keys(block, ["id", "title", "description", "entry", "defaultSource", "actions", "reader", "languages"], "block");
+  keys(block, ["id", "title", "description", "entry", "defaultSource", "actions", "reader"], "block");
   text(block.id, 1, 64, "block.id");
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(block.id)) reject("Block id must be a lowercase slug.");
   text(block.title, 1, 120, "block.title");
@@ -150,16 +150,6 @@ function validateBlock(block, actions) {
   if (block.defaultSource !== undefined && (typeof block.defaultSource !== "string" || [...block.defaultSource].length > 48000)) reject("Block defaultSource must contain at most 48000 characters.");
   if (block.reader !== undefined && typeof block.reader !== "boolean") reject("Block reader must be a boolean.");
   validateBlockActions(block.actions, actions);
-  validateBlockLanguages(block.languages);
-}
-function validateBlockLanguages(languages) {
-  if (languages === undefined) return;
-  if (!Array.isArray(languages) || languages.length > 8) reject("Block languages must be an array of at most eight names.");
-  const seen = new Set();
-  for (const language of languages) {
-    if (typeof language !== "string" || !/^[a-z][a-z0-9-]{0,31}$/.test(language) || seen.has(language)) reject("Block languages must be unique lowercase code language names.");
-    seen.add(language);
-  }
 }
 function validateBlockEntry(entry) {
   text(entry, 1, 1024, "block.entry");

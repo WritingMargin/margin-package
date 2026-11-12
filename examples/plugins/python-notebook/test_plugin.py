@@ -218,39 +218,35 @@ class ProtocolTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             PluginServer(('127.0.0.1', 0), '')
 
-    def test_context_cannot_be_missing_or_spoofed_via_input(self):
-        bad = [{'input': {'notebookId': 'n'}},
-               {'input': {'notebookId': 'n'}, 'context': {'actorId': ''}},
-               {'input': {'notebookId': 'n', 'actorId': 'bob'}, 'context': {'actorId': 'alice'}}]
-        for payload in bad:
+    def test_identity_headers_are_required_and_cannot_be_spoofed_via_input(self):
+        for identity in (None, ('', 'p'), ('alice', '')):
             with self.assertRaises(PluginError):
-                validate_call('session.create', payload)
+                validate_call('session.create', {'notebookId': 'n'}, identity)
+        for inputs in ({'notebookId': 'n', 'actorId': 'bob'}, {'input': {'notebookId': 'n'}, 'context': {'actorId': 'alice'}}):
+            with self.assertRaises(PluginError):
+                validate_call('session.create', inputs, ('alice', 'p'))
 
     def test_contract_uses_stable_actor_and_publication_identity(self):
-        identity, inputs = validate_call('session.create', {
-            'input': {'notebookId': 'n'}, 'context': {'actorId': 'alice', 'publicationId': 'p'}})
+        identity, inputs = validate_call('session.create', {'notebookId': 'n'}, ('alice', 'p'))
         self.assertEqual(identity, ('alice', 'p'))
         self.assertEqual(inputs, {'notebookId': 'n'})
 
     def test_unknown_action_and_oversized_code_rejected(self):
         with self.assertRaises(PluginError):
-            validate_call('shell.run', {})
+            validate_call('shell.run', {}, ('alice', 'p'))
         with self.assertRaises(PluginError):
-            validate_call('cell.execute', {'input': {'sessionId': 's', 'code': 'x' * 65537},
-                                           'context': {'actorId': 'alice'}})
+            validate_call('cell.execute', {'sessionId': 's', 'code': 'x' * 65537}, ('alice', 'p'))
 
     def test_managed_creation_is_optional_strict_boolean(self):
-        context = {'actorId': 'alice'}
         for managed in (True, False):
-            _, inputs = validate_call('session.create', {'input': {'notebookId': 'n', 'managed': managed}, 'context': context})
+            _, inputs = validate_call('session.create', {'notebookId': 'n', 'managed': managed}, ('alice', 'p'))
             self.assertIs(inputs['managed'], managed)
         for managed in ('true', 1, None):
             with self.assertRaises(PluginError):
-                validate_call('session.create', {'input': {'notebookId': 'n', 'managed': managed}, 'context': context})
+                validate_call('session.create', {'notebookId': 'n', 'managed': managed}, ('alice', 'p'))
 
     def test_empty_notebook_cell_is_valid(self):
-        _, inputs = validate_call('cell.execute', {'input': {'sessionId': 's', 'code': ''},
-                                                  'context': {'actorId': 'alice'}})
+        _, inputs = validate_call('cell.execute', {'sessionId': 's', 'code': ''}, ('alice', 'p'))
         self.assertEqual(inputs['code'], '')
 
 

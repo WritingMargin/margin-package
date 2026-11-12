@@ -1,6 +1,6 @@
 {
   "name": "@margin/plugin-sdk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Build portable Margin browser plugins with optional owner-configured HTTP actions.",
   "type": "module",
@@ -32,7 +32,6 @@
     "browser.mjs",
     "browser.d.mts",
     "schema.mjs",
-    "server.mjs",
     "create.mjs",
     "create-block.mjs",
     "check.mjs",

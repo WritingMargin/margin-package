@@ -82,8 +82,8 @@ class IntegrationTests(unittest.TestCase):
 
     def test_authenticated_stateful_execution_interrupt_restart_and_limits(self):
         self.assertEqual(self.request('/manifest', token=False)[0], 401)
-        status, manifest = self.request('/manifest')
-        self.assertEqual((status, manifest['id']), (200, 'python-notebook'))
+        self.assertEqual(self.request('/manifest')[0], 404)
+        self.assertEqual(self.request('/actions/session.create', {'input': {'notebookId': 'old'}, 'context': {'actorId': 'owner'}}, identity=('owner', 'engine-a'))[0], 400)
         status, created = self.action('session.create', {'notebookId': 'notebook-1'})
         self.assertEqual(status, 200, created)
         session_id = created['sessionId']

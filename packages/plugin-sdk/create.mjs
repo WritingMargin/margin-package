@@ -12,7 +12,6 @@ function argumentsFor(args) {
   let sdk = localSDK;
   while (flags.length) {
     const flag = flags.shift();
-    if (flag === '--block') continue;
     if (flag !== '--sdk' || !flags[0]) throw new Error('Supported option: --sdk /local/path/to/plugin-sdk.');
     sdk = flags.shift();
   }

@@ -31,3 +31,7 @@ test("invalid persisted scenes and failed executions cannot be saved", () => {
   assert.throws(() => writeSource("x", { ok: false, error: "failed", logs: [] }), /successfully/);
   assert.throws(() => writeSource("x".repeat(48001)), /48,000/);
 });
+
+test("raw experimental source is rejected; only JSON block source is accepted",()=>{
+ assert.throws(()=>readSource("scene.add(new THREE.Group())"),SyntaxError);
+});

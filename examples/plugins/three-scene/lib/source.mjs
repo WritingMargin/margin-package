@@ -2,12 +2,7 @@ import { parseThreeExecution } from "./three-plugin.ts";
 /** A snapshot belongs to its exact code; editing code deliberately drops it. */
 export function readSource(source) {
   if (typeof source !== "string") throw new Error("The scene block source must be text.");
-  let value;
-  try { value = JSON.parse(source); }
-  catch {
-    if (source.length > 48000) throw new Error("Three.js code exceeds 48,000 characters.");
-    return { code: source };
-  }
+  const value = JSON.parse(source);
   if (!value || typeof value !== "object" || typeof value.code !== "string") throw new Error("The scene block needs a code string.");
   if (value.code.length > 48000) throw new Error("Three.js code exceeds 48,000 characters.");
   if (value.scene === undefined) return { code: value.code };

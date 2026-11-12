@@ -11,7 +11,7 @@ export const connectionHint =
 export function executionAvailable(context) {
   if (context.mode === "read") return false;
   return (
-    !Array.isArray(context.actions) ||
+    Array.isArray(context.actions) &&
     executionActions.every((action) => context.actions.includes(action))
   );
 }

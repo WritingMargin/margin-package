@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -53,17 +53,22 @@ function manifest(version, id = 'browser-smoke') {
 }
 async function createPackages() {
   const archives = {};
-  for (const [name, version, id] of [['v1', '1.0.0'], ['v2', '2.0.0'], ['v3', '3.0.0'], ['wrong', '2.0.0', 'other-plugin'], ['legacy', '1.0.0']]) {
+  for (const [name, version, id] of [['v1', '1.0.0'], ['v2', '2.0.0'], ['v3', '3.0.0'], ['wrong', '2.0.0', 'other-plugin']]) {
     const output = path.join(directory, `${name}.margin-plugin`);
-    const metadata = { packageVersion: name === 'legacy' ? 'margin.package/v1' : 'margin.package/v2', plugin: manifest(version, id) };
+    const metadata = { packageVersion: 'margin.package/v2', plugin: manifest(version, id) };
     await writePackage(output, metadata, [{ path: 'ui/card.html', bytes: Buffer.from(`<!doctype html><html><body><p>Portable browser card ${version}</p><script>window.fixtureVersion=${JSON.stringify(version)};</script></body></html>`) }]);
     archives[name] = await readFile(output);
   }
   // Keep the store-only ZIP and CRC intact; corrupt only a declared SHA-256.
-  archives.badHash = corruptManifestHash(archives.v3);
+  archives.badHash = rewriteManifest(archives.v3, text => {
+    const digest = /"ui\/card\.html": "([a-f0-9]{64})"/.exec(text)?.[1];
+    assert(digest, 'Missing fixture digest');
+    return text.replace(digest, '0'.repeat(64));
+  });
+  archives.legacy = rewriteManifest(archives.v1, text => text.replace('margin.package/v2', 'margin.package/v1'));
   return archives;
 }
-function corruptManifestHash(archive) {
+function rewriteManifest(archive, transform) {
   const result = Buffer.from(archive);
   let offset = 0;
   while (result.readUInt32LE(offset) === 0x04034b50) {
@@ -72,9 +77,8 @@ function corruptManifestHash(archive) {
     const start = offset + 30 + nameLength + extraLength;
     if (name === 'margin-package.json') {
       const text = result.subarray(start, start + size).toString();
-      const digest = /"ui\/card\.html": "([a-f0-9]{64})"/.exec(text)?.[1];
-      assert(digest, 'Missing fixture digest');
-      const changed = Buffer.from(text.replace(digest, '0'.repeat(64)));
+      const changed = Buffer.from(transform(text));
+      assert.equal(changed.length, size, 'Fixture mutations must preserve ZIP entry length');
       changed.copy(result, start);
       // Archive CRC is recomputed by the tiny helper below for both headers.
       const checksum = crc32(changed);
@@ -157,7 +161,7 @@ async function installAndReview(archives) {
   await request('/plugins/packages', { method: 'POST', bytes: archives.badHash, expected: 400 });
   assert.deepEqual((await data('/plugins')).plugins, []);
   const installed = await data('/plugins/packages', { method: 'POST', bytes: archives.v1, expected: 201 });
-  assert.equal(installed.enabled, false); assert.equal(installed.endpoint, ''); assert.equal(installed.packageVersion, 'margin.package/v2');
+  assert.equal(installed.enabled, false); assert.equal('endpoint' in installed, false); assert.equal(installed.packageVersion, 'margin.package/v2');
   assert.deepEqual((await data('/plugin-blocks', { owner: false })).blocks, []);
   await request(framePath, { owner: false, expected: 404 });
   await request('/plugins/packages', { method: 'POST', bytes: archives.v1, expected: 409 });
@@ -174,12 +178,6 @@ async function preserveStateAcrossUpdates(archives) {
   assert(!JSON.stringify(configured).includes(secret));
   const connection = storedConnection();
   assert(connection.encrypted_key && connection.encrypted_key !== secret);
-  const names = (await readdir(packageRoot)).filter(name => /^[0-9a-f-]{36}$/.test(name));
-  assert.equal(names.length, 1);
-  const dataDirectory = path.join(packageRoot, names[0] + '-data');
-  await mkdir(path.join(dataDirectory, 'nested'), { recursive: true });
-  const sentinel = Buffer.from([0, 1, 127, 255]);
-  await writeFile(path.join(dataDirectory, 'nested', 'saved.bin'), sentinel);
   const content = 'Before\n\n```plugin:browser-smoke:card\n{"note":"Keep my saved article"}\n```\n\nAfter';
   const post = await data('/posts', { method: 'POST', input: { title: 'Portable article', slug: 'portable-article', content }, expected: 201 });
   // Merely listing, loading a frame and replacing packages needs no API access.
@@ -187,21 +185,18 @@ async function preserveStateAcrossUpdates(archives) {
   const updated = await update(archives.v2, '1.0.0');
   assert.equal(updated.version, '2.0.0'); assert.equal(updated.enabled, true);
   assert.deepEqual(updated.http, configured.http); assert.deepEqual(storedConnection(), connection);
-  assert.deepEqual(await readFile(path.join(dataDirectory, 'nested', 'saved.bin')), sentinel);
   assert.equal((await data(`/posts/${post.id}`)).content, content);
   await frame('2.0.0');
   const before = await plugin();
   for (const [bytes, version, expected] of [[archives.v3, undefined, 428], [archives.v3, '1.0.0', 409], [archives.wrong, '2.0.0', 400], [archives.badHash, '2.0.0', 400], [archives.v2, '2.0.0', 409]]) {
     await update(bytes, version, expected); assert.deepEqual(await plugin(), before); assert.deepEqual(storedConnection(), connection);
-    assert.deepEqual(await readFile(path.join(dataDirectory, 'nested', 'saved.bin')), sentinel);
   }
   await patch({ enabled: false });
   const disabled = await update(archives.v3, '2.0.0'); assert.equal(disabled.enabled, false); assert.equal(disabled.version, '3.0.0');
   await request(framePath, { owner: false, expected: 404 });
   await patch({ enabled: true }); await stop(); await start(); await frame('3.0.0');
   assert.deepEqual(storedConnection(), connection); assert.equal((await data(`/posts/${post.id}`)).content, content);
-  assert.deepEqual(await readFile(path.join(dataDirectory, 'nested', 'saved.bin')), sentinel);
-  console.log('Updates and restart preserve article content, encrypted HTTP connection, enabled state and stored-data sentinel; rejected updates make no changes.');
+  console.log('Updates and restart preserve article content, encrypted HTTP connection, enabled state; rejected updates make no changes.');
 }
 async function readerPermissions() {
   await publicCall();

@@ -150,14 +150,6 @@ function configureMode(mode) {
   byId("mode").textContent = { edit: "Editing", preview: "Author preview", read: "Interactive scene" }[mode] || "";
   if (mode === "edit") byId("run-hint").textContent = "Run, explore, then save a scene for readers.";
 }
-function readInitial(source) {
-  try { return readSource(source); }
-  catch (error) {
-    message("error", `The saved scene could not be loaded. ${error.message}`);
-    try { return { code: JSON.parse(source).code ?? "" }; }
-    catch { return { code: source }; }
-  }
-}
 function observeHeight() {
   let frame = 0;
   state.resize = new ResizeObserver(() => {
@@ -177,7 +169,7 @@ async function boot() {
   const { context } = state.client;
   applyTheme(context.theme);
   configureMode(context.mode);
-  const source = readInitial(context.source);
+  const source = readSource(context.source);
   state.code = source.code;
   state.saved = source.scene ?? null;
   state.result = state.saved;

@@ -1,33 +1,20 @@
-import { validateManifest, validateSchema, validateValue, PluginValidationError } from "./schema.mjs";
+import { validateManifest, validateSchema, validateValue, validateAction, PluginValidationError } from './schema.mjs';
 export { validateManifest, validateSchema, validateValue, PluginValidationError };
-export { createPluginServer, startPlugin } from "./server.mjs";
-const plugins = new WeakMap();
-export function defineAction(definition) {
-  if (typeof definition?.handler !== "function" && !definition?.http) throw new PluginValidationError("Action needs a handler(input, context) function.");
-  return Object.freeze({ ...definition });
-}
 function freeze(value) {
-  if (value && typeof value === "object") {
+  if (value && typeof value === 'object') {
     for (const child of Object.values(value)) freeze(child);
     Object.freeze(value);
   }
   return value;
 }
-export function definePlugin(definition) {
-  const { actions, ...metadata } = definition;
-  if (!Array.isArray(actions)) throw new PluginValidationError("Plugin needs an actions array.");
-  const manifest = structuredClone({ apiVersion: "margin.plugin/v1", ...metadata, actions: actions.map(({ handler: _handler, ...action }) => action) });
-  validateManifest(manifest);
-  const handlers = new Map(actions.map((action) => {
-    if (action.handler !== undefined && typeof action.handler !== "function") throw new PluginValidationError(`Invalid handler for ${action.name}.`);
-    return [action.name, action.handler];
-  }));
-  const plugin = Object.freeze({ manifest: freeze(manifest) });
-  plugins.set(plugin, handlers);
-  return plugin;
+/** Define an HTTP action contract. Implement its endpoint in your own service. */
+export function defineAction(definition) {
+  validateAction(definition);
+  return freeze(structuredClone(definition));
 }
-export function pluginHandler(plugin, name) {
-  const handlers = plugins.get(plugin);
-  if (!handlers) throw new PluginValidationError("Create your plugin with definePlugin().");
-  return handlers.get(name);
+/** A plugin is declarative metadata and bundled browser assets, never handlers. */
+export function definePlugin(definition) {
+  const manifest = { apiVersion: 'margin.plugin/v1', ...definition };
+  validateManifest(manifest);
+  return Object.freeze({ manifest: freeze(structuredClone(manifest)) });
 }

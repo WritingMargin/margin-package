@@ -3,8 +3,8 @@ export interface ImportedTextFile { name: string; text: string }
 export interface BlockContext {
   readonly mode: "edit" | "preview" | "read";
   readonly source: string;
-  readonly actions?: readonly string[];
-  readonly readerActions?: readonly string[];
+  readonly actions: readonly string[];
+  readonly readerActions: readonly string[];
   readonly theme: Readonly<{ background: string; foreground: string; muted: string; accent: string; border: string; fontFamily: string }>;
 }
 export interface BlockAPI {

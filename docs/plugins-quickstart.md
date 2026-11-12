@@ -76,10 +76,9 @@ show the saved results or a clear unavailable message.
 Keep its ID stable, increment the version, run checks and package again. Choose
 **Update package** in Margin or publish the new portable archive through the
 plugin directory. Existing article source and API connection settings remain.
-Handle old source formats in your browser component; updates never run native
-migration scripts.
+Updates accept current-format packages only and never execute migration scripts.
 
 Before releasing, test editor changes, reader rendering, disabled or missing
-connections, HTTP errors and update compatibility. Never place secrets in package
+connections, HTTP errors and package replacement. Never place secrets in package
 files or article source. See the [package format](plugin-packages.md) and
 [block SDK](plugin-blocks.md) for the full contract.

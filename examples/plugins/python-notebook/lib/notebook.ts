@@ -45,10 +45,7 @@ export function parseNotebook(source: string): Notebook {
   }
   return notebook;
 }
-export function notebookBlock(source: string) {
-  const notebook = parseNotebook(source);
-  return "\n\n```ipynb\n" + JSON.stringify(notebook) + "\n```\n\n";
-}
+
 /** Terminal formatting is display-only; never rewrite imported notebook JSON. */
 export function stripNotebookTerminalControls(text: string): string {
   return (

@@ -9,6 +9,7 @@ import {createProject} from './create.mjs';
 const sdk=dirname(fileURLToPath(import.meta.url));
 async function temporary(run){const dir=await mkdtemp(join(tmpdir(),'margin-browser-sdk-'));try{await run(dir);}finally{await rm(dir,{recursive:true,force:true});}}
 test('scaffolder rejects traversal and never overwrites existing projects',()=>temporary(async dir=>{
+ await assert.rejects(createProject(['create','alias','--block'],dir),/Supported option/);
  for(const name of ['../escape','/absolute','nested/path','Bad Name'])await assert.rejects(createProject(['create',name],dir),/lowercase name/);
  await mkdir(join(dir,'existing'));await writeFile(join(dir,'existing/keep.txt'),'untouched');
  await assert.rejects(createProject(['create','existing'],dir),/already exists/);

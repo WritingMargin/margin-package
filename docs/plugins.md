@@ -97,17 +97,12 @@ undeclared owner-only actions. They receive action results, never the API key.
   service configured by the owner. Margin does not start a local Python kernel.
   The example service source is supplied separately for deployment on your server.
 
-## Migrating older packages
+## Supported contract
 
-The earlier experimental `margin.package/v1` packages included native executables.
-They can no longer be installed or enabled. Existing installations are disabled
-when Margin starts; their article source and stored data remain intact. Update to
-a portable v2 package with the same plugin ID. Configure an external HTTP service
-for any functionality that previously ran inside the package.
-
-Legacy external plugin services remain an advanced, owner-only integration. They
-are independently hosted and cannot supply packaged block files. New article
-components should use portable packages and the HTTP bridge.
+Margin accepts only the current portable package and browser SDK contract.
+Earlier executable packages, external plugin-wire services and language aliases
+are unsupported. There are no migration adapters or runtime fallbacks. Blocks
+use the canonical `plugin:<plugin-id>:<block-id>` fence identifier.
 
 ## Reference
 
@@ -117,7 +112,7 @@ components should use portable packages and the HTTP bridge.
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /api/plugins` | Owner's installed packages and connected services; no secrets |
+| `GET /api/plugins` | Owner's installed packages; no secrets |
 | `GET /api/plugins/host` | Package format and upload availability |
 | `POST /api/plugins/packages` | Upload a portable ZIP as `application/zip` |
 | `PATCH /api/plugins/{id}` | Enable/disable or configure the HTTP connection |

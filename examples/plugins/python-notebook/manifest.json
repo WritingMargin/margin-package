@@ -2,7 +2,7 @@
   "apiVersion": "margin.plugin/v1",
   "id": "python-notebook",
   "name": "Python notebooks",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Explore ideas with Python cells that remember your work as you write.",
   "capabilities": [
     "notebook.execute"
@@ -261,10 +261,7 @@
         "session.heartbeat",
         "session.close"
       ],
-      "reader": true,
-      "languages": [
-        "ipynb"
-      ]
+      "reader": true
     }
   ]
 }

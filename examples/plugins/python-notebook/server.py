@@ -16,21 +16,14 @@ MAX_REQUEST_BYTES = 128 * 1024
 ACTIONS = {action['name']: action for action in MANIFEST['actions']}
 
 
-def validate_call(action, payload):
+def validate_call(action, inputs, identity):
     if action not in ACTIONS:
         raise PluginError(404, 'ACTION_NOT_FOUND', 'Unknown plugin action.')
-    if not isinstance(payload, dict) or set(payload) != {'input', 'context'}:
-        raise PluginError(400, 'INVALID_REQUEST', 'Expected input and server context objects.')
-    context = payload['context']
-    if not isinstance(context, dict) or set(context) - {'actorId', 'publicationId'}:
-        raise PluginError(400, 'INVALID_CONTEXT', 'Invalid server context.')
-    actor = context.get('actorId')
-    publication = context.get('publicationId', '')
-    if not isinstance(actor, str) or not actor or len(actor) > 200:
-        raise PluginError(400, 'INVALID_CONTEXT', 'An author identity is required.')
-    if not isinstance(publication, str) or len(publication) > 200:
-        raise PluginError(400, 'INVALID_CONTEXT', 'Invalid publication identity.')
-    inputs = payload['input']
+    if not isinstance(identity, tuple) or len(identity) != 2:
+        raise PluginError(400, 'INVALID_CONTEXT', 'Author and publication headers are required.')
+    actor, publication = identity
+    if any(not isinstance(value, str) or not value or len(value) > 200 for value in identity):
+        raise PluginError(400, 'INVALID_CONTEXT', 'Author and publication headers are required.')
     schema = ACTIONS[action]['inputSchema']
     if not isinstance(inputs, dict) or set(inputs) - set(schema['properties']) or not set(schema['required']).issubset(inputs):
         raise PluginError(400, 'INVALID_INPUT', 'The action input has missing or unknown fields.')
@@ -91,7 +84,7 @@ class PluginServer(ThreadingHTTPServer):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'MarginNotebook/0.4'
+    server_version = 'MarginNotebook/0.5'
 
     def setup(self):
         super().setup()
@@ -118,13 +111,11 @@ class Handler(BaseHTTPRequestHandler):
             raise PluginError(401, 'UNAUTHORIZED', 'A valid service credential is required.')
 
     def do_GET(self):
-        self.handle_call(self.get_payload)
+        self.handle_call(self.unknown_route)
 
-    def get_payload(self):
+    def unknown_route(self):
         self.authorize()
-        if self.path != '/manifest':
-            raise PluginError(404, 'NOT_FOUND', 'Unknown plugin route.')
-        return MANIFEST
+        raise PluginError(404, 'NOT_FOUND', 'Unknown plugin route.')
 
     def do_POST(self):
         self.handle_call(self.post_payload)
@@ -135,10 +126,10 @@ class Handler(BaseHTTPRequestHandler):
             raise PluginError(404, 'NOT_FOUND', 'Unknown plugin route.')
         payload = self.read_payload()
         action = self.path[len('/actions/'):]
-        identity, inputs = validate_call(action, {'input': payload, 'context': {
-            'actorId': self.headers.get('X-Margin-Actor-Id', ''),
-            'publicationId': self.headers.get('X-Margin-Publication-Id', ''),
-        }})
+        identity, inputs = validate_call(action, payload, (
+            self.headers.get('X-Margin-Actor-Id', ''),
+            self.headers.get('X-Margin-Publication-Id', ''),
+        ))
         if identity[0] == 'reader':
             raise PluginError(403, 'OWNER_ONLY', 'Only the author can execute notebook code.')
         output = dispatch(self.server.sessions, action, identity, inputs)
@@ -202,11 +193,7 @@ def check_setup():
 def main():
     parser = argparse.ArgumentParser(description='Run the optional Margin Python notebook plugin for trusted authors.')
     parser.add_argument('--check', action='store_true', help='Check dependencies and configuration without starting a server.')
-    parser.add_argument('--manifest', action='store_true', help='Print the plugin manifest as JSON without starting a server.')
     args = parser.parse_args()
-    if args.manifest:
-        print(json.dumps(MANIFEST, indent=2))
-        return
     try:
         address = check_setup()
         if args.check:

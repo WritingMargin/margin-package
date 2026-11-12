@@ -4,8 +4,8 @@ Portable plugins supply their whole interface. Margin discovers block descriptor
 from the package manifest and places enabled blocks in the **Plugin block** menu.
 There is no custom renderer to register in Margin's core.
 
-Each descriptor identifies an HTML entry, a title, optional initial source and
-language aliases, a list of allowed actions, and whether it has a reader view.
+Each descriptor identifies an HTML entry, a title, optional initial source, a list of allowed actions, and whether it has a reader view.
+Article fences use `plugin:<plugin-id>:<block-id>`; language aliases are not supported.
 The same component receives an `edit`, `preview` or `read` context.
 
 ```js

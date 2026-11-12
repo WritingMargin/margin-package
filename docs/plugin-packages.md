@@ -45,22 +45,20 @@ browser code.
 Margin checks the package version, manifest schemas, block entries, file paths,
 size limits and every payload's SHA-256. Traversal, duplicate paths, symlinks,
 undeclared files and missing payloads are rejected. `target` and `launch` are not
-part of v2. Older executable v1 packages are rejected with a migration message.
+part of v2. Unsupported formats and unknown manifest fields are rejected.
 
 Directory downloads additionally verify the complete archive's byte size and
 SHA-256 against the exact reviewed catalog entry. Installation starts disabled.
 
-## Updates and migration
+## Updates
 
 Keep the plugin ID stable and increase its version. Owners can update through
 Browse plugins or upload a replacement in Manage. Updates require `If-Match` with
 the installed version, preserve HTTP connection settings and saved content, and
 replace files transactionally with recovery after interrupted updates.
 
-Existing v1 installations remain disabled and cannot launch a runtime. A v2
-replacement with the same ID preserves their stored data and article source.
-No migration runs package-supplied code. Plugin authors must keep source formats
-compatible or handle old source in their browser component.
+Updates apply between current-format browser packages. Margin does not convert
+older package formats or run package-supplied migration code.
 
 ## Publishing
 

@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   parseNotebook,
-  notebookBlock,
   notebookOutputText,
   stripNotebookTerminalControls,
 } from "./lib/notebook.ts";
@@ -21,9 +20,7 @@ const notebook = {
   ],
 };
 test("Notebook import preserves the original cells and rejects malformed content", () => {
-  const block = notebookBlock(JSON.stringify(notebook));
-  assert.match(block, /^\s*```ipynb\n/);
-  assert.deepEqual(parseNotebook(block.split("\n")[3]), notebook);
+  assert.deepEqual(parseNotebook(JSON.stringify(notebook)), notebook);
   assert.throws(() => parseNotebook('{"nbformat":4,"cells":[null]}'));
 });
 test("Jupyter coloured traceback renders as readable lines without changing notebook JSON", () => {

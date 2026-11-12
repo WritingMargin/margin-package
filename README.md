@@ -34,8 +34,9 @@ no GitHub account.
 
 Keep the plugin ID stable and increase its version. Updates preserve saved article
 source and HTTP connection settings. Publish a new release rather than replacing
-an existing asset. The earlier experimental native runtime packages are obsolete;
-new Margin builds disable them and require a portable replacement.
+an existing asset. Only the current portable package and browser SDK contract is
+supported. There are no native runtime, external plugin-wire or language-alias
+compatibility paths.
 
 ## Develop a plugin
 
@@ -53,7 +54,7 @@ Python service is deployed independently; it is never installed by Margin.
 
 1. Build a portable `.margin-plugin` and test its actual editor and reader views.
 2. Test install, enable, update, and declared HTTP interactions in Margin.
-3. Attach the archive to a versioned release such as `three-scene-v0.3.0`.
+3. Attach the archive to a versioned release such as `three-scene-v0.4.0`.
 4. Update the reviewed catalog with the exact archive URL, size and SHA-256.
 5. Run `node scripts/validate-catalog.mjs --verify-assets`.
 

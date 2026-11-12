@@ -30,3 +30,8 @@ test("connected notebook execution stays available to authors while readers see 
   assert.equal(executionHint({ mode: "read", actions }), "");
   assert.match(executionHint({ mode: "edit", actions }), /Save outputs/);
 });
+
+test("omitted current action lists never enable execution",()=>{
+ assert.equal(executionAvailable({mode:"edit"}),false);
+ assert.equal(executionAvailable({mode:"preview"}),false);
+});

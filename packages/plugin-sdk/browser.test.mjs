@@ -5,7 +5,7 @@ import { once } from "node:events";
 import { BlockClient } from "./browser.mjs";
 function fixture(mode = "edit") {
   const { port1, port2 } = new MessageChannel();
-  const client = new BlockClient(port1, { mode, source: "original", theme: {} });
+  const client = new BlockClient(port1, { mode, source: "original", theme: {}, actions: ["text.count", "scene.execute", "session.close"], readerActions: [] });
   return { client, port: port2, close() { client.close(); port2.close(); } };
 }
 test("block bridge routes results by request id and stages edits separately", async () => {
@@ -141,4 +141,9 @@ test("readers can invoke only the effective explicit HTTP allowlist",async()=>{
   await assert.rejects(client.action("private.execute",{}),/not available to readers/);
   assert.throws(()=>client.change("changed"),/editor/);
  }finally{client.close();port2.close();}
+});
+
+test("missing current host action lists are rejected instead of enabling compatibility behavior",()=>{
+ const {port1,port2}=new MessageChannel();
+ try{assert.throws(()=>new BlockClient(port1,{mode:"edit",source:"{}",theme:{}}),/Invalid Margin block context/);}finally{port1.close();port2.close();}
 });
