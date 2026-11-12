@@ -1,6 +1,0 @@
-{
- "apiVersion":"margin.plugin/v1","id":"http-playground","name":"API playground","version":"0.1.0",
- "description":"Let readers try a configured API without exposing its URL or credentials.","capabilities":["http.try"],
- "actions":[{"name":"api.request","title":"Try the API","description":"Send a JSON object to the owner-configured service.","inputSchema":{"type":"object","additionalProperties":true},"outputSchema":{"type":"object","additionalProperties":true},"http":{"method":"POST","path":"/try","reader":true}}],
- "blocks":[{"id":"request","title":"API playground","description":"An editable JSON request and safe response viewer.","entry":"ui/playground.html","defaultSource":"{\"message\":\"Hello Margin\"}","actions":["api.request"],"reader":true}]
-}

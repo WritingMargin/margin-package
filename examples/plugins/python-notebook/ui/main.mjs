@@ -1,4 +1,5 @@
 import { connectBlock } from "../../../../packages/plugin-sdk/browser.mjs";
+import { executionAvailable, executionHint } from "../lib/connection.mjs";
 import { importNotebook } from "../lib/import.mjs";
 import { parseNotebook, notebookText } from "../lib/notebook.ts";
 import { NotebookRunner } from "../lib/notebook-runner.ts";
@@ -30,6 +31,7 @@ const state = {
 };
 const editable = () => state.client.context.mode === "edit";
 const executable = () => state.client.context.mode !== "read";
+const canRun = () => executionAvailable(state.client.context);
 function message(id, text) {
   $(id).textContent = text;
   $(id).hidden = !text;
@@ -64,15 +66,19 @@ function makeRunner() {
 }
 function controls() {
   $("count").textContent = `${state.book.cells.length} cells`;
-  $("run-all").disabled = state.busy || codeCells(state.book).length === 0;
-  $("restart").disabled = state.busy;
-  $("stop").hidden = !state.busy || state.importing;
+  $("run-all").disabled =
+    !canRun() || state.busy || codeCells(state.book).length === 0;
+  $("restart").disabled = !canRun() || state.busy;
+  $("stop").hidden = !canRun() || !state.busy || state.importing;
   $("save").disabled = state.busy || state.saved || state.results.size === 0;
   for (const id of ["import", "new"]) $(id).disabled = state.busy;
   for (const button of $("add").querySelectorAll("button"))
     button.disabled = state.busy;
   for (const input of $("cells").querySelectorAll("textarea,select,button"))
-    input.disabled = state.busy || input.dataset.blocked === "true";
+    input.disabled =
+      state.busy ||
+      input.dataset.blocked === "true" ||
+      (input.dataset.execution === "true" && !canRun());
 }
 function button(text, action, label) {
   const node = element("button", "", text);
@@ -91,7 +97,9 @@ function stageEdit(invalidateRuntime = true) {
     message("error", "");
     message(
       "status",
-      "Notebook updated. Run cells and save outputs before applying the block.",
+      canRun()
+        ? "Notebook updated. Run cells and save outputs before applying the block."
+        : "Notebook updated. Choose Insert or Apply to save your changes.",
     );
   } catch (error) {
     fail(error);
@@ -147,16 +155,17 @@ function cellTools(cell, index) {
       ),
     );
   }
-  if (cell.cell_type === "code" && executable())
-    actions.append(
-      button(
-        "Run cell",
-        () => {
-          void run(index);
-        },
-        `Run cell ${index + 1}`,
-      ),
+  if (cell.cell_type === "code" && executable()) {
+    const runCell = button(
+      "Run cell",
+      () => {
+        void run(index);
+      },
+      `Run cell ${index + 1}`,
     );
+    runCell.dataset.execution = "true";
+    actions.append(runCell);
+  }
   tools.append(actions);
   return tools;
 }
@@ -236,7 +245,7 @@ function renderCells() {
   controls();
 }
 async function run(index) {
-  if (state.busy || !executable()) return;
+  if (state.busy || !canRun()) return;
   state.busy = true;
   state.stopped = false;
   message("error", "");
@@ -275,7 +284,7 @@ async function stop() {
   }
 }
 async function restart() {
-  if (state.busy) return;
+  if (state.busy || !canRun()) return;
   state.busy = true;
   controls();
   try {
@@ -315,8 +324,8 @@ async function replaceNotebook(book) {
   state.busy = true;
   controls();
   try {
-    await state.runner.close();
-    state.runner = makeRunner();
+    await state.runner?.close();
+    state.runner = canRun() ? makeRunner() : null;
     stage(state.client, book);
     state.book = book;
     state.results.clear();
@@ -409,9 +418,7 @@ function configureMode() {
   }[mode];
   for (const id of ["import", "new", "save", "add"]) $(id).hidden = !editable();
   $("execution").hidden = !executable();
-  $("execution-hint").textContent = editable()
-    ? "Runs are temporary until you choose Save outputs."
-    : "Private Python execution. Saved notebook data is unchanged.";
+  $("execution-hint").textContent = executionHint(state.client.context);
 }
 function observeHeight() {
   let frame = 0;
@@ -430,14 +437,14 @@ async function boot() {
   theme(state.client.context.theme);
   configureMode();
   state.book = parseNotebook(state.client.context.source);
-  if (executable()) state.runner = makeRunner();
+  if (canRun()) state.runner = makeRunner();
   bindControls();
   renderCells();
   observeHeight();
   message(
     "status",
-    executable()
-      ? "Python runs in your installed notebook plugin. Your source stays yours."
+    canRun()
+      ? "Python runs in your connected service. Your source stays yours."
       : "",
   );
   window.addEventListener(

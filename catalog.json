@@ -17,8 +17,8 @@
       "releaseNotes": "Portable browser package replaces the experimental bundled Python runtime. Configure your independently hosted notebook service in API connection settings. Existing article source is preserved.",
       "package": {
         "url": "https://github.com/WritingMargin/margin-package/releases/download/python-notebook-v0.4.0/python-notebook-0.4.0.margin-plugin",
-        "sha256": "9e89c7c01f2b657551821866ebc148602e88a6656833d7ee76e3d1be96242f66",
-        "size": 37413
+        "sha256": "edcfdc1d225387f8a1cd6916bfe860e60f03782df82c96c83b905cf9d9d0564c",
+        "size": 37988
       }
     },
     {
@@ -39,26 +39,6 @@
         "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.3.0/three-scene-0.3.0.margin-plugin",
         "sha256": "fa989757a118d4927082f90ef75591e7519a5367517d126033eaa13fd78de358",
         "size": 1487998
-      }
-    },
-    {
-      "id": "http-playground",
-      "name": "API playground",
-      "description": "Let readers try your API from an article. Margin forwards approved requests and keeps configured credentials on the server.",
-      "version": "0.1.0",
-      "publisher": "WritingMargin",
-      "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/http-playground",
-      "features": [
-        "Editable JSON requests and response viewer",
-        "Fixed API action through Margin\u2019s Go HTTP bridge",
-        "Server-side API credentials",
-        "Reader interactions require explicit owner permission"
-      ],
-      "releaseNotes": "Initial portable API playground. Configure your public HTTPS base URL; the component POSTs JSON to /try. Reader access is off until explicitly enabled by the owner.",
-      "package": {
-        "url": "https://github.com/WritingMargin/margin-package/releases/download/http-playground-v0.1.0/http-playground-0.1.0.margin-plugin",
-        "sha256": "18967793d436a5a261969278f47a6912a5b9a9c627d092ebc6b8ccde5e877b3d",
-        "size": 11339
       }
     }
   ]

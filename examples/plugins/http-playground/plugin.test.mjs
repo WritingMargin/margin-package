@@ -1,2 +1,0 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {validateManifest} from '../../../packages/plugin-sdk/schema.mjs';
-test('reader API route is explicit and has no URL or credentials',async()=>{const m=validateManifest(JSON.parse(await readFile(new URL('./manifest.json',import.meta.url),'utf8')));assert.deepEqual(m.actions[0].http,{method:'POST',path:'/try',reader:true});assert.deepEqual(m.blocks[0].actions,['api.request']);assert(!JSON.stringify(m).includes('https://'));});

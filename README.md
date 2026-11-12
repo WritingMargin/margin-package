@@ -18,7 +18,6 @@ executables, runtime downloads or operating-system-specific builds.
 | --- | --- |
 | [Jupyter notebook](examples/plugins/python-notebook/) | Browser notebook editor, import/export and saved reader outputs. Python execution uses your independently hosted HTTP service. |
 | [Three.js scenes](examples/plugins/three-scene/) | Browser code editor, worker-based scene generation and interactive 3D views. No server runtime. |
-| [API playground](examples/plugins/http-playground/) | Reader-facing JSON requests through Margin’s HTTP bridge and your configured API. |
 
 For an article component that needs your server, configure its public HTTPS base
 URL and optional API key in Margin. Margin's built-in Go HTTP bridge validates

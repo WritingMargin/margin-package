@@ -1,1 +1,0 @@
-{"name":"margin-http-playground","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test plugin.test.mjs","pack":"node build.mjs"}}
