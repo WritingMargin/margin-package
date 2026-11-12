@@ -5,7 +5,7 @@
       "id": "python-notebook",
       "name": "Jupyter notebook",
       "description": "Write and import notebooks in your browser. Connect your own Python API to run cells, and share saved results with readers.",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "publisher": "WritingMargin",
       "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/python-notebook",
       "features": [
@@ -14,18 +14,18 @@
         "Optional execution through your external Python API",
         "Saved outputs for readers, with no local kernel"
       ],
-      "releaseNotes": "Portable browser package replaces the experimental bundled Python runtime. Configure your independently hosted notebook service in API connection settings. Existing article source is preserved.",
+      "releaseNotes": "Current browser plugin contract only. No legacy package, code-fence alias, server helper or host-protocol fallbacks. Import and export standard Jupyter notebooks; run cells through your independently hosted Python API.",
       "package": {
-        "url": "https://github.com/WritingMargin/margin-package/releases/download/python-notebook-v0.4.0/python-notebook-0.4.0.margin-plugin",
-        "sha256": "edcfdc1d225387f8a1cd6916bfe860e60f03782df82c96c83b905cf9d9d0564c",
-        "size": 37988
+        "url": "https://github.com/WritingMargin/margin-package/releases/download/python-notebook-v0.5.0/python-notebook-0.5.0.margin-plugin",
+        "sha256": "9e5fcbc1d37f2c3d1638fb8ef39b535a7dcb9848ebc8d1462e6e4a924dece09b",
+        "size": 37957
       }
     },
     {
       "id": "three-scene",
       "name": "Three.js scenes",
       "description": "Build and explore interactive 3D scenes directly in the browser. No Node.js service or server runtime is needed.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "publisher": "WritingMargin",
       "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/three-scene",
       "features": [
@@ -34,11 +34,11 @@
         "Interactive orbit, zoom and animation controls",
         "Saved scenes for your readers"
       ],
-      "releaseNotes": "Portable browser-only package. Three.js execution uses a disposable browser worker; no Node.js runtime or server process is installed. Existing scene source and saved outputs remain compatible.",
+      "releaseNotes": "Current browser plugin contract only. No legacy package, code-fence alias, server helper or host-protocol fallbacks. Run Three.js in a disposable browser worker and share interactive scenes without a server runtime.",
       "package": {
-        "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.3.0/three-scene-0.3.0.margin-plugin",
-        "sha256": "fa989757a118d4927082f90ef75591e7519a5367517d126033eaa13fd78de358",
-        "size": 1487998
+        "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.4.0/three-scene-0.4.0.margin-plugin",
+        "sha256": "f2e3007ccb9c8bd44cf4fd5cb5f4384dc157b3acc5ed6c29919353b1902f0e36",
+        "size": 1487748
       }
     }
   ]
