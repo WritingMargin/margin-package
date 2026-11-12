@@ -36,6 +36,7 @@ function centralHeader(name, bytes, crc, offset, executable) {
 }
 /** Store-only ZIP: predictable bounds, no shell/archiver dependency, all entries regular files. */
 export async function writePackage(output, metadata, entries) {
+  if (metadata.packageVersion !== "margin.package/v2" || Object.keys(metadata).some(key => !["packageVersion", "plugin"].includes(key))) throw new Error("Use portable margin.package/v2 metadata without target, launch or runtime.");
   if (entries.length + 1 > MAX_FILES) throw new Error("Package exceeds 20000 files.");
   const seen = new Set();
   let expectedSize = 0;
@@ -62,9 +63,7 @@ export async function writePackage(output, metadata, entries) {
     for (const entry of entries) {
       const bytes = entry.bytes ?? await readFile(entry.source);
       hashes[entry.path] = createHash("sha256").update(bytes).digest("hex");
-      const executable = entry.path === metadata.launch.executable || entry.executable === true ||
-        (entry.source && ((await stat(entry.source)).mode & 0o111) !== 0);
-      await append(entry.path, bytes, executable);
+      await append(entry.path, bytes, false);
       if (offset > MAX_ARCHIVE) throw new Error("Package exceeds 256 MiB.");
     }
     const manifest = Buffer.from(JSON.stringify({ ...metadata, files: hashes }, null, 2) + "\n");

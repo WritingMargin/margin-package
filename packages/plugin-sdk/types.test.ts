@@ -36,10 +36,10 @@ function blockTypes(client: BlockAPI) {
   void result;
 }
 void blockTypes;
+// @ts-expect-error Output words must match the declared numeric schema.
 defineAction({
   name: "bad.action", title: "Bad", description: "Bad",
   inputSchema: { type: "object" },
   outputSchema: { type: "object", properties: { words: { type: "integer" } }, required: ["words"] },
-  // @ts-expect-error Output words must match the declared numeric schema.
   handler: () => ({ words: "wrong" }),
 });

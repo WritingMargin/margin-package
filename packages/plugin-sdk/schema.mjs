@@ -100,11 +100,12 @@ export function validateValue(schema, value, path = "input") {
   return value;
 }
 function validateAction(action) {
-  keys(action, ["name", "title", "description", "inputSchema", "outputSchema"], "action");
+  keys(action, ["name", "title", "description", "inputSchema", "outputSchema", "http"], "action");
   text(action.name, 1, 80, "action.name");
   if (!actionName.test(action.name)) reject("Action names use lowercase letters, numbers, dots or hyphens.");
   text(action.title, 1, 120, "action.title");
   text(action.description, 0, 2000, "action.description");
+  if (action.http !== undefined) validateHTTP(action.http);
   for (const schema of [action.inputSchema, action.outputSchema]) {
     if (schema?.type !== "object") reject("Action inputSchema and outputSchema must have type object.");
     validateSchema(schema);
@@ -117,7 +118,7 @@ export function validateManifest(manifest) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(manifest.id)) reject("Plugin id must be a lowercase slug.");
   text(manifest.name, 1, 120, "name"); text(manifest.version, 1, 120, "version"); text(manifest.description, 0, 2000, "description");
   validateCapabilities(manifest.capabilities);
-  if (!Array.isArray(manifest.actions) || !manifest.actions.length || manifest.actions.length > 32) reject("Provide 1–32 actions.");
+  if (!Array.isArray(manifest.actions) || manifest.actions.length > 32) reject("Provide 0–32 actions.");
   const names = new Set();
   for (const action of manifest.actions) {
     validateAction(action);
@@ -193,4 +194,11 @@ function validateCapabilities(capabilities) {
     if (!actionName.test(name) || seen.has(name)) reject("Capabilities must have unique lowercase names.");
     seen.add(name);
   }
+}
+
+function validateHTTP(http) {
+  keys(http, ["method", "path", "reader"], "action.http");
+  if (!["GET", "POST"].includes(http.method)) reject("HTTP actions use GET or POST.");
+  if (typeof http.reader !== "boolean") reject("HTTP reader permission must be explicit.");
+  if (typeof http.path !== "string" || http.path.length > 1024 || !/^\/(?!\/)[a-zA-Z0-9_./-]*$/.test(http.path) || http.path.split("/").some(part => part === "." || part === "..")) reject("HTTP action path must be a clean relative server path without query or credentials.");
 }

@@ -20,3 +20,4 @@ jobs:
       - run: node --test packages/plugin-sdk/*.test.mjs
       - run: npm test --prefix examples/plugins/python-notebook
       - run: npm test --prefix examples/plugins/three-scene
+      - run: npm test --prefix examples/plugins/http-playground

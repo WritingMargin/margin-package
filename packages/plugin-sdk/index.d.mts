@@ -19,6 +19,7 @@ export interface ActionContext {
 export interface ActionManifest {
   readonly name: string; readonly title: string; readonly description: string;
   readonly inputSchema: ObjectSchema; readonly outputSchema: ObjectSchema;
+  readonly http?: { readonly method: "GET" | "POST"; readonly path: string; readonly reader: boolean };
 }
 export interface Action<Input extends object = Record<string, unknown>, Output extends object = Record<string, unknown>> extends ActionManifest {
   readonly handler: (input: Input, context: ActionContext) => Output | Promise<Output>;
@@ -60,7 +61,8 @@ export function defineAction<const Input extends ObjectSchema, const Output exte
   inputSchema: Input; outputSchema: Output;
   handler: (input: SchemaValue<Input>, context: ActionContext) => NoInfer<SchemaValue<Output>> | Promise<NoInfer<SchemaValue<Output>>>;
 }): Action<SchemaValue<Input> & object, SchemaValue<Output> & object>;
-export function definePlugin(definition: Omit<PluginManifest, "apiVersion" | "actions"> & { actions: readonly (ActionManifest & { handler: (input: never, context: ActionContext) => object | Promise<object> })[] }): Plugin;
+export function defineAction(definition: ActionManifest & { http: NonNullable<ActionManifest["http"]> }): ActionManifest;
+export function definePlugin(definition: Omit<PluginManifest, "apiVersion" | "actions"> & { actions: readonly (ActionManifest & { handler?: (input: never, context: ActionContext) => object | Promise<object> })[] }): Plugin;
 export class PluginValidationError extends Error {}
 export function validateManifest(manifest: unknown): PluginManifest;
 export function validateSchema(schema: unknown): Schema;

@@ -1,3 +1,4 @@
+import { executeScene } from "../runner.mjs";
 import { connectBlock } from "../../../../packages/plugin-sdk/browser.mjs";
 import { readSource, stageCode, stageScene } from "../lib/source.mjs";
 import { parseThreeExecution } from "../lib/three-plugin.ts";
@@ -89,7 +90,7 @@ async function run() {
   message("status", "Building your scene…");
   updateButtons();
   try {
-    const value = await state.client.action("scene.execute", { code: state.code }, { signal: controller.signal });
+    const value = await executeScene(state.code, controller.signal);
     if (!controller.signal.aborted) showResult(parseThreeExecution(value));
   } catch (error) { runFailed(controller, error); }
   finally {

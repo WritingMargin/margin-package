@@ -63,7 +63,8 @@ export class BlockClient {
   }
   #validateAction(action, input, signal) {
     if (this.#closed) throw new Error("This block is closed.");
-    if (this.context.mode === "read") throw new Error("Reader blocks cannot execute actions.");
+    if (this.context.mode === "read" && !this.context.readerActions?.includes(action)) throw new Error("This action is not available to readers.");
+    if (Array.isArray(this.context.actions) && !this.context.actions.includes(action)) throw new Error("This block does not declare that action.");
     signal?.throwIfAborted();
     if (this.#pending.size >= 4) throw new Error("Wait for an action to finish before starting another.");
     if (typeof action !== "string" || !/^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/.test(action)) throw new Error("Invalid action name.");

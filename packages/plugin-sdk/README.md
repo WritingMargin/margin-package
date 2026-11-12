@@ -1,142 +1,31 @@
-# Make something useful for a writer
+# Margin browser plugin SDK
 
-The Margin plugin SDK lets you turn a small function into a tool a writer can use in their publication. You describe its inputs and result, write the function, and let the runner handle the connection.
+Build a small, portable `.margin-plugin` archive containing a manifest and bundled browser UI. Margin never launches an installed plugin as a server process. Node is a developer build tool only.
 
-Plugins are optional installable packages. The SDK bundles your code and a Node
-runtime into a `.margin-plugin` file; Margin manages its process after the owner
-enables it. The engine host needs no installed Node, npm, or manually configured
-endpoint. The SDK has no runtime dependencies and is **not published to npm**.
-
-## Your first plugin
-
-For a plugin with its own editor and reader UI, use `create my-plugin --block`.
-The generated `block.html` and its manifest declaration travel with the package.
-See [custom blocks](../../docs/plugin-blocks.md) for the browser API, saved
-results, isolated rendering and a Three.js example.
-
-Use Node.js 24 or later on your development machine. From your projects folder:
+From the Margin checkout:
 
 ```sh
-node /path/to/Margin/packages/plugin-sdk/create.mjs create my-plugin
+node packages/plugin-sdk/create.mjs create my-plugin
 cd my-plugin
 npm test
 npm run check
 npm run pack
 ```
 
-Install the resulting `.margin-plugin` file in **Settings → Integrations →
-Plugins**, review its capabilities and enable it. Try **Count my words** in its
-developer tools with `{"text":"Hello Margin"}`. The package defaults to your
-computer's OS and architecture; match the target displayed by Margin.
+Install the resulting archive in Margin's plugin settings. The default writing card counts words locally; it needs no endpoint or API key. Edit `dist/block.html` and `manifest.json`, test, then package again. The SDK is a local dependency and is not published to npm.
 
-The generator installs this SDK from its local filesystem path without registry
-access. The archive contains the needed SDK files, app and Node runtime/license.
-It excludes the generated development `.env`. For a local editing loop,
-`npm run dev` starts a watched service; connecting that endpoint is optional.
-
-See the [quickstart](../../docs/plugins-quickstart.md) and
-[package guide](../../docs/plugin-packages.md) for cross-target runtimes,
-explicit app file selection, other languages and lifecycle behavior.
-
-The starter contains:
-
-| File | What you change |
-| --- | --- |
-| `plugin.ts` | Your actions, their descriptions, and the code they run |
-| `plugin.test.mjs` | Examples that show what your action should do |
-| `server.ts` | Starts the SDK runner |
-| `.env` | Your private token, listening address, and port |
-| `package.json` | Commands and the local SDK dependency |
-
-Run `npm test` to exercise the action. Run `npm run check` to validate the manifest and schemas. `npm run check -- --json` prints the manifest you will share with Margin. A failed check exits with a nonzero status.
-
-Node strips TypeScript syntax when running the starter; it does **not** perform a TypeScript compile check. An editor with TypeScript support provides inferred types. Teams using TypeScript in CI can also run their own `tsc --noEmit` check with TypeScript and Node type declarations installed. The SDK repository tests its declarations with a separate compile check.
-
-## Write an action
-
-```ts
-import { defineAction, definePlugin, startPlugin } from "@margin/plugin-sdk";
-
-const count = defineAction({
-  name: "text.count",
-  title: "Count my words",
-  description: "See how much you have written. Your text is not stored.",
-  inputSchema: {
-    type: "object",
-    properties: { text: { type: "string", maxLength: 12000 } },
-    required: ["text"],
-    additionalProperties: false,
-  },
-  outputSchema: {
-    type: "object",
-    properties: { characters: { type: "integer", minimum: 0 } },
-    required: ["characters"],
-    additionalProperties: false,
-  },
-  handler(input, context) {
-    // input.text is inferred as string; the result must contain a number.
-    context.signal.throwIfAborted();
-    return { characters: [...input.text].length };
-  },
-});
-
-const plugin = definePlugin({
-  id: "my-writing-tools",
-  name: "My writing tools",
-  version: "0.1.0",
-  description: "Small tools for a thoughtful writing practice.",
-  capabilities: ["text.analysis"],
-  actions: [count],
-});
-
-// PLUGIN_TOKEN must be configured; the generated starter supplies .env.
-await startPlugin(plugin);
-```
-
-You can add several actions with different input and result types. Keep handler logic independent of HTTP so you can call `action.handler(input, context)` in ordinary tests. Direct calls skip runtime validation; `createPluginServer` and `startPlugin` validate incoming input and outgoing results.
-
-`definePlugin` validates and freezes a snapshot of the manifest. After you change an action or schema, build a new package version and install it in Margin. External development connections use manifest refresh.
-
-## The small API
-
-- `defineAction({ ...metadata, inputSchema, outputSchema, handler })`: infer TypeScript handler types from literal schemas.
-- `definePlugin({ id, name, version, description, capabilities, actions })`: validate and freeze a plugin definition. Its `.manifest` contains no handler code.
-- `startPlugin(plugin, options?)`: start the service, returning a promise of the Node HTTP server. Defaults to `PLUGIN_HOST=127.0.0.1` and `PLUGIN_PORT=8789`. Logs connection instructions, never the token.
-- `createPluginServer(plugin, options?)`: create the HTTP server without binding, useful for tests or your existing process.
-- `validateManifest(value)`, `validateSchema(value)`, `validateValue(schema, value, path?)`: validate locally and throw `PluginValidationError` with a useful explanation.
-
-Runner options include `token`, `concurrency` (1–4, default 4), `timeoutMs` (100–25000, default 25000), and `onError(error)`. `startPlugin` also accepts `host`, `port`, and `log(message)`.
-
-Every action receives `context.actorId`, `context.publicationId`, and `context.signal`. Scope stored state to **both identities**, because separate Margin installations can have the same owner id. Pass the signal to `fetch` and other cancellable operations. It aborts when the client disconnects or the deadline expires.
-
-## Schemas that work in Margin
-
-Input and output roots must have `type: "object"`. Supported schema types are `object`, `array`, `string`, `number`, `integer`, and `boolean`.
-
-Supported constraints are `properties`, `required`, boolean `additionalProperties`, `items`, `enum`, `minimum`, `maximum`, `minLength`, `maxLength`, `minItems`, and `maxItems`. `title` and `description` are annotations. Unknown keywords, including `$ref`, `pattern`, and `oneOf`, are rejected rather than silently ignored. Arrays need `items`; required fields must be declared in `properties`.
-
-Schemas are bounded to depth 8 and 256 nodes, 64 properties, and 64 enum values. A plugin has 1–32 actions and up to 32 capabilities. Manifests are capped at 128 KiB.
-
-## What the runner takes care of
-
-Both `GET /manifest` and `POST /actions/{name}` require a bearer token. A token must contain at least 24 non-whitespace characters; the starter generates 32 random bytes. Input is limited to 64 KiB, the full request envelope to 72 KiB, and serialized output to 256 KiB. Handler errors are kept out of HTTP responses; use `onError` for your own private diagnostics.
-
-The concurrency slot remains occupied until a handler actually finishes, including after a timeout response. Timeouts bound waiting; they cannot interrupt synchronous CPU work or a handler that ignores cancellation. The SDK is a service runner, **not a code sandbox**. Use a separately isolated process or container for untrusted code, and apply host resource limits when deploying.
-
-The runner expects Margin's envelope:
-
-```json
-{"input":{"text":"Hello Margin"},"context":{"actorId":"1","publicationId":"your-publication-id"}}
-```
-
-It returns `{"output":{...}}`. It never receives Margin cookies, API tokens, database credentials, or application internals. See [the protocol guide](../../docs/plugins.md) for other languages and deployment details.
-
-## Use an existing project
+For an existing bundled UI:
 
 ```sh
-npm install /path/to/Margin/packages/plugin-sdk --ignore-scripts
+node packages/plugin-sdk/pack.mjs --directory dist --manifest manifest.json --output my-plugin.margin-plugin
 ```
 
-Import from `@margin/plugin-sdk` afterward. This is a local dependency; the path in the generated `package.json` and lockfile must exist on the target machine. For another environment, copy or install the SDK there and update that path. The scaffolder accepts `--sdk /another/local/plugin-sdk` when needed. No public registry package is assumed.
+The ZIP contains exactly `margin-package.json` metadata (`packageVersion: "margin.package/v2"`, `plugin`, `files`) and hashed regular browser assets. No `target`, `launch`, runtime binary, server code, credential or dependency directory is packaged. Symlinks, unsafe paths and common secret files are rejected. Each block entry is self-contained HTML with inline JS/CSS; bundle your framework and libraries before packing.
 
-A scaffold name is a lowercase slug, not a destination path. Run the command from your desired parent folder. The tool refuses traversal and existing targets, and never replaces an existing project or `.env` file.
+`connectBlock()` provides source, theme, edit/preview/read mode and scoped messaging. Only edit mode can call `change(source)`. The author commits staged changes with Insert/Apply. Import/export go through explicit host controls. Worker code may run in an isolated browser worker; it has no server access, and the iframe's network access is blocked.
+
+For server work, declare an action with JSON input/output schemas and `http: {method: "POST", path: "/fixed/path", reader: false}`. GET accepts an empty input object. The owner supplies a public HTTPS base URL and optional credentials in Margin settings. The bridge sends raw JSON input and validates the raw JSON object response. It never accepts a URL or credential from the iframe. Public actions need `reader: true`, block inclusion and owner reader opt-in; the effective allowlist arrives as `context.actions` / `context.readerActions`.
+
+See `examples/plugins/http-playground` for a reader API block, `three-scene` for local worker execution, and `python-notebook` for a separately deployed notebook service. Jupyter's service authenticates the bridge and uses server-derived `X-Margin-Actor-Id` / `X-Margin-Publication-Id` headers to scope sessions.
+
+The optional `defineAction` handler and `startPlugin` utilities remain for independently hosted service examples and tests. They are never installed or launched by a browser package. New services can use any language or framework and only need the declared HTTP contract.

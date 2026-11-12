@@ -26,8 +26,10 @@ class IntegrationTests(unittest.TestCase):
         self.server.server_close()
         self.thread.join(2)
 
-    def request(self, path, payload=None, token=True):
+    def request(self, path, payload=None, token=True, identity=None):
         headers = {'Content-Type': 'application/json'}
+        if identity:
+            headers.update({'X-Margin-Actor-Id': identity[0], 'X-Margin-Publication-Id': identity[1]})
         if token:
             headers['Authorization'] = f'Bearer {self.token}'
         request = urllib.request.Request(self.base + path, headers=headers,
@@ -39,14 +41,13 @@ class IntegrationTests(unittest.TestCase):
             return error.code, json.load(error)
 
     def action(self, name, inputs, actor='owner', publication='engine-a'):
-        return self.request('/actions/' + name, {'input': inputs, 'context': {
-            'actorId': actor, 'publicationId': publication}})
+        return self.request('/actions/' + name, inputs, identity=(actor, publication))
 
     def test_managed_owner_loss_stops_a_running_real_kernel(self):
         self.sessions.timeout = 20
         status, created = self.action('session.create', {'notebookId': 'leased', 'managed': True})
         self.assertEqual(status, 200, created)
-        session_id = created['output']['sessionId']
+        session_id = created['sessionId']
         inputs = {'sessionId': session_id}
         session = self.sessions.get(('owner', 'engine-a'), session_id)
         pid = session.driver.manager.provisioner.pid
@@ -85,18 +86,18 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual((status, manifest['id']), (200, 'python-notebook'))
         status, created = self.action('session.create', {'notebookId': 'notebook-1'})
         self.assertEqual(status, 200, created)
-        session_id = created['output']['sessionId']
+        session_id = created['sessionId']
         inputs = {'sessionId': session_id}
         self.assertEqual(self.action('cell.execute', {**inputs, 'code': 'value = 41'})[0], 200)
         status, result = self.action('cell.execute', {**inputs, 'code': 'print(value + 1)'})
         self.assertEqual(status, 200, result)
-        self.assertIn('42', ''.join(output.get('text', '') for output in result['output']['outputs']))
-        self.assertEqual(result['output']['executionCount'], 2)
+        self.assertIn('42', ''.join(output.get('text', '') for output in result['outputs']))
+        self.assertEqual(result['executionCount'], 2)
         self.assertEqual(self.action('cell.execute', {**inputs, 'code': ''})[0], 200)
         self.assertEqual(self.action('cell.execute', {**inputs, 'code': '1'}, publication='engine-b')[0], 404)
         status, result = self.action('cell.execute', {**inputs, 'code': "import os; print('MARGIN_PLUGIN_TOKEN' in os.environ)"})
         self.assertEqual(status, 200, result)
-        self.assertIn('False', ''.join(output.get('text', '') for output in result['output']['outputs']))
+        self.assertIn('False', ''.join(output.get('text', '') for output in result['outputs']))
 
         results = []
         runner = threading.Thread(target=lambda: results.append(self.action('cell.execute', {
@@ -111,11 +112,11 @@ class IntegrationTests(unittest.TestCase):
         runner.join(5)
         self.assertFalse(runner.is_alive())
         self.assertEqual(results[0][0], 200, results)
-        self.assertTrue(any(item.get('ename') == 'KeyboardInterrupt' for item in results[0][1]['output']['outputs']))
+        self.assertTrue(any(item.get('ename') == 'KeyboardInterrupt' for item in results[0][1]['outputs']))
 
         self.assertEqual(self.action('session.restart', inputs)[0], 200)
         status, result = self.action('cell.execute', {**inputs, 'code': 'value'})
-        self.assertTrue(any(item.get('ename') == 'NameError' for item in result['output']['outputs']))
+        self.assertTrue(any(item.get('ename') == 'NameError' for item in result['outputs']))
         status, error = self.action('cell.execute', {**inputs, 'code': 'import time; time.sleep(30)'})
         self.assertEqual((status, error['code']), (408, 'EXECUTION_TIMEOUT'))
         self.assertEqual(self.action('cell.execute', {**inputs, 'code': '2 + 2'})[0], 200)

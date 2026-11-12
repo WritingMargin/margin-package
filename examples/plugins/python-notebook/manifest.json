@@ -1,0 +1,270 @@
+{
+  "apiVersion": "margin.plugin/v1",
+  "id": "python-notebook",
+  "name": "Python notebooks",
+  "version": "0.4.0",
+  "description": "Explore ideas with Python cells that remember your work as you write.",
+  "capabilities": [
+    "notebook.execute"
+  ],
+  "actions": [
+    {
+      "name": "session.create",
+      "title": "Start a notebook",
+      "description": "Create a private Python kernel for this author.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "notebookId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "managed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "notebookId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "http": {
+        "method": "POST",
+        "path": "/actions/session.create",
+        "reader": false
+      }
+    },
+    {
+      "name": "cell.execute",
+      "title": "Run a cell",
+      "description": "Execute Python in an existing session. Results are returned when the cell finishes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "code": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 65536
+          }
+        },
+        "required": [
+          "sessionId",
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "outputs": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "executionCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "outputs",
+          "executionCount"
+        ],
+        "additionalProperties": false
+      },
+      "http": {
+        "method": "POST",
+        "path": "/actions/cell.execute",
+        "reader": false
+      }
+    },
+    {
+      "name": "session.interrupt",
+      "title": "Stop execution",
+      "description": "Interrupt the current cell without waiting for it to finish.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "http": {
+        "method": "POST",
+        "path": "/actions/session.interrupt",
+        "reader": false
+      }
+    },
+    {
+      "name": "session.restart",
+      "title": "Restart the notebook",
+      "description": "Clear variables and restart the session's kernel.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "http": {
+        "method": "POST",
+        "path": "/actions/session.restart",
+        "reader": false
+      }
+    },
+    {
+      "name": "session.heartbeat",
+      "title": "Keep notebook open",
+      "description": "Renew the owner lease for an open notebook editor.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "http": {
+        "method": "POST",
+        "path": "/actions/session.heartbeat",
+        "reader": false
+      }
+    },
+    {
+      "name": "session.close",
+      "title": "Close the notebook",
+      "description": "Stop the kernel and remove its temporary files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "http": {
+        "method": "POST",
+        "path": "/actions/session.close",
+        "reader": false
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "id": "notebook",
+      "title": "Jupyter notebook",
+      "description": "Write, run, and share Python notebooks with saved results.",
+      "entry": "ui/notebook.html",
+      "defaultSource": "{\n  \"nbformat\": 4,\n  \"nbformat_minor\": 5,\n  \"metadata\": {\n    \"kernelspec\": {\n      \"display_name\": \"Python 3\",\n      \"language\": \"python\",\n      \"name\": \"python3\"\n    }\n  },\n  \"cells\": [\n    {\n      \"id\": \"intro\",\n      \"cell_type\": \"markdown\",\n      \"metadata\": {},\n      \"source\": [\n        \"## Explore an idea\\n\",\n        \"Run the first cell, then build on it in the next.\"\n      ]\n    },\n    {\n      \"id\": \"first\",\n      \"cell_type\": \"code\",\n      \"metadata\": {},\n      \"execution_count\": null,\n      \"outputs\": [],\n      \"source\": [\n        \"answer = 40\\n\",\n        \"print('Notebook ready')\"\n      ]\n    },\n    {\n      \"id\": \"second\",\n      \"cell_type\": \"code\",\n      \"metadata\": {},\n      \"execution_count\": null,\n      \"outputs\": [],\n      \"source\": [\n        \"answer + 2\"\n      ]\n    }\n  ]\n}",
+      "actions": [
+        "session.create",
+        "cell.execute",
+        "session.interrupt",
+        "session.restart",
+        "session.heartbeat",
+        "session.close"
+      ],
+      "reader": true,
+      "languages": [
+        "ipynb"
+      ]
+    }
+  ]
+}

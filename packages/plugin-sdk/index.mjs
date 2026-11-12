@@ -3,7 +3,7 @@ export { validateManifest, validateSchema, validateValue, PluginValidationError 
 export { createPluginServer, startPlugin } from "./server.mjs";
 const plugins = new WeakMap();
 export function defineAction(definition) {
-  if (typeof definition?.handler !== "function") throw new PluginValidationError("Action needs a handler(input, context) function.");
+  if (typeof definition?.handler !== "function" && !definition?.http) throw new PluginValidationError("Action needs a handler(input, context) function.");
   return Object.freeze({ ...definition });
 }
 function freeze(value) {
@@ -19,7 +19,7 @@ export function definePlugin(definition) {
   const manifest = structuredClone({ apiVersion: "margin.plugin/v1", ...metadata, actions: actions.map(({ handler: _handler, ...action }) => action) });
   validateManifest(manifest);
   const handlers = new Map(actions.map((action) => {
-    if (typeof action.handler !== "function") throw new PluginValidationError(`Action '${action.name}' needs a handler.`);
+    if (action.handler !== undefined && typeof action.handler !== "function") throw new PluginValidationError(`Invalid handler for ${action.name}.`);
     return [action.name, action.handler];
   }));
   const plugin = Object.freeze({ manifest: freeze(manifest) });

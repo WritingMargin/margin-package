@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
-import { executeScene, activeWorkerCount, stopWorkers } from "./runner.mjs";
+import { workerFactory } from "./test-worker.mjs";
+import { executeScene as runScene, activeWorkerCount, stopWorkers } from "./runner.mjs";
+const executeScene = (code, signal, options = {}) => runScene(code, signal, {...options, workerFactory});
 const signal = () => new AbortController().signal;
 const boxCode = `
 const mesh = new THREE.Mesh(new THREE.BoxGeometry(2,3,4), new THREE.MeshStandardMaterial({color:0x44aa88}));

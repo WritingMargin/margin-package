@@ -3,11 +3,13 @@ export interface ImportedTextFile { name: string; text: string }
 export interface BlockContext {
   readonly mode: "edit" | "preview" | "read";
   readonly source: string;
+  readonly actions?: readonly string[];
+  readonly readerActions?: readonly string[];
   readonly theme: Readonly<{ background: string; foreground: string; muted: string; accent: string; border: string; fontFamily: string }>;
 }
 export interface BlockAPI {
   readonly context: BlockContext;
-  /** Calls only an action declared by this block; unavailable to public readers. */
+  /** Calls only an action declared by this block; readers may call only explicitly permitted HTTP actions. */
   action<T = Record<string, unknown>>(name: string, input: Record<string, unknown>, options?: { signal?: AbortSignal }): Promise<T>;
   /** Stage source in the block editor. Margin's Insert/Apply button commits it. */
   change(source: string): void;

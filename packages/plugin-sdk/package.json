@@ -1,8 +1,8 @@
 {
   "name": "@margin/plugin-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Build optional Margin plugin services. Local development package; not published to npm.",
+  "description": "Build portable Margin browser plugins with optional owner-configured HTTP actions.",
   "type": "module",
   "engines": {
     "node": ">=24"

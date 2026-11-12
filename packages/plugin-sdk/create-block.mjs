@@ -35,7 +35,8 @@ document.querySelector('#count').addEventListener('click', async event => {
   const button = event.currentTarget;
   button.disabled = true;
   try {
-    const result = await client.action('text.count', {text:text.value});
+    const words = [...new Intl.Segmenter('en', {granularity:'word'}).segment(text.value)].filter(item => item.isWordLike).length;
+    const result = {words, characters:[...text.value].length};
     status.textContent = result.words + ' words · ' + result.characters + ' characters';
     stage({text:text.value,words:result.words});
   } catch(error) { status.textContent = error.message; }

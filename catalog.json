@@ -1,60 +1,65 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "plugins": [
     {
       "id": "python-notebook",
       "name": "Jupyter notebook",
-      "description": "Turn your guides into working notebooks. Write and run Python cells, import a notebook, and share saved results with readers.",
-      "version": "0.3.0",
+      "description": "Write and import notebooks in your browser. Connect your own Python API to run cells, and share saved results with readers.",
+      "version": "0.4.0",
       "publisher": "WritingMargin",
       "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/python-notebook",
       "features": [
-        "Notebook editor with code, Markdown and raw cells",
+        "Browser notebook editor with code, Markdown and raw cells",
         "Import and export Jupyter notebooks",
-        "Run Python with a bundled interpreter and Jupyter kernel",
-        "Share saved text, errors and image outputs with readers"
+        "Optional execution through your external Python API",
+        "Saved outputs for readers, with no local kernel"
       ],
-      "releaseNotes": "Includes the complete notebook editor and reader, native notebook import, and managed kernel cleanup when leaving the page.",
-      "packages": [
-        {
-          "os": "darwin",
-          "arch": "arm64",
-          "url": "https://github.com/WritingMargin/margin-package/releases/download/python-notebook-v0.3.0/python-notebook-0.3.0-darwin-arm64.margin-plugin",
-          "sha256": "bd35e055463b26bac7df5f8359025638d1acfc5a17398ccf6e1cf817d9e0aaa7",
-          "size": 110786945
-        }
-      ]
+      "releaseNotes": "Portable browser package replaces the experimental bundled Python runtime. Configure your independently hosted notebook service in API connection settings. Existing article source is preserved.",
+      "package": {
+        "url": "https://github.com/WritingMargin/margin-package/releases/download/python-notebook-v0.4.0/python-notebook-0.4.0.margin-plugin",
+        "sha256": "9e89c7c01f2b657551821866ebc148602e88a6656833d7ee76e3d1be96242f66",
+        "size": 37413
+      }
     },
     {
       "id": "three-scene",
       "name": "Three.js scenes",
-      "description": "Bring an idea into three dimensions. Write Three.js code, preview a scene, and let readers explore it in your article.",
-      "version": "0.2.0",
+      "description": "Build and explore interactive 3D scenes directly in the browser. No Node.js service or server runtime is needed.",
+      "version": "0.3.0",
       "publisher": "WritingMargin",
       "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/three-scene",
       "features": [
-        "Plugin-owned Three.js code editor",
-        "Interactive orbit, zoom and reset controls",
-        "Saved scenes and animation clips for readers",
-        "Bundled Node.js and Three.js runtime"
+        "Three.js code execution in a browser worker",
+        "Two-second execution limit and cancellation",
+        "Interactive orbit, zoom and animation controls",
+        "Saved scenes for your readers"
       ],
-      "releaseNotes": "Includes the complete scene editor, code execution, saved reader views, and animation controls. Linux x86-64 requires glibc (tested on Debian bookworm); Alpine/musl is not supported.",
-      "packages": [
-        {
-          "os": "darwin",
-          "arch": "arm64",
-          "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.2.0/three-scene-0.2.0-darwin-arm64.margin-plugin",
-          "sha256": "7b36409e48de7bdaad78294933d4ede8b76d33c18321256254d6e5df6b2535ba",
-          "size": 124774470
-        },
-        {
-          "os": "linux",
-          "arch": "amd64",
-          "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.2.0/three-scene-0.2.0-linux-amd64.margin-plugin",
-          "sha256": "7217dd87c4c832413edb5d96494905a409f3854ef9cac5e382440c78426774d2",
-          "size": 129537208
-        }
-      ]
+      "releaseNotes": "Portable browser-only package. Three.js execution uses a disposable browser worker; no Node.js runtime or server process is installed. Existing scene source and saved outputs remain compatible.",
+      "package": {
+        "url": "https://github.com/WritingMargin/margin-package/releases/download/three-scene-v0.3.0/three-scene-0.3.0.margin-plugin",
+        "sha256": "fa989757a118d4927082f90ef75591e7519a5367517d126033eaa13fd78de358",
+        "size": 1487998
+      }
+    },
+    {
+      "id": "http-playground",
+      "name": "API playground",
+      "description": "Let readers try your API from an article. Margin forwards approved requests and keeps configured credentials on the server.",
+      "version": "0.1.0",
+      "publisher": "WritingMargin",
+      "homepage": "https://github.com/WritingMargin/margin-package/tree/main/examples/plugins/http-playground",
+      "features": [
+        "Editable JSON requests and response viewer",
+        "Fixed API action through Margin\u2019s Go HTTP bridge",
+        "Server-side API credentials",
+        "Reader interactions require explicit owner permission"
+      ],
+      "releaseNotes": "Initial portable API playground. Configure your public HTTPS base URL; the component POSTs JSON to /try. Reader access is off until explicitly enabled by the owner.",
+      "package": {
+        "url": "https://github.com/WritingMargin/margin-package/releases/download/http-playground-v0.1.0/http-playground-0.1.0.margin-plugin",
+        "sha256": "18967793d436a5a261969278f47a6912a5b9a9c627d092ebc6b8ccde5e877b3d",
+        "size": 11339
+      }
     }
   ]
 }

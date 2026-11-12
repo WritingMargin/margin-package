@@ -91,7 +91,7 @@ class PluginServer(ThreadingHTTPServer):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'MarginNotebook/0.3'
+    server_version = 'MarginNotebook/0.4'
 
     def setup(self):
         super().setup()
@@ -135,11 +135,16 @@ class Handler(BaseHTTPRequestHandler):
             raise PluginError(404, 'NOT_FOUND', 'Unknown plugin route.')
         payload = self.read_payload()
         action = self.path[len('/actions/'):]
-        identity, inputs = validate_call(action, payload)
+        identity, inputs = validate_call(action, {'input': payload, 'context': {
+            'actorId': self.headers.get('X-Margin-Actor-Id', ''),
+            'publicationId': self.headers.get('X-Margin-Publication-Id', ''),
+        }})
+        if identity[0] == 'reader':
+            raise PluginError(403, 'OWNER_ONLY', 'Only the author can execute notebook code.')
         output = dispatch(self.server.sessions, action, identity, inputs)
         if action == 'session.create':
             self.unreturned_session = (identity, output['sessionId'])
-        return {'output': output}
+        return output
 
     def read_payload(self):
         if self.headers.get_content_type() != 'application/json' or self.headers.get('Transfer-Encoding'):

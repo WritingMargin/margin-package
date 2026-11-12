@@ -1,5 +1,3 @@
-import { parentPort, workerData } from "node:worker_threads";
-import vm from "node:vm";
 import * as THREE from "three";
 import { parseThreeExecution } from "./lib/three-plugin.ts";
 const materials = new Set(["MeshStandardMaterial", "MeshPhysicalMaterial", "MeshPhongMaterial", "MeshLambertMaterial", "MeshBasicMaterial", "MeshNormalMaterial", "MeshDepthMaterial", "LineBasicMaterial", "PointsMaterial"]);
@@ -41,7 +39,7 @@ function snapshot(scene, camera, target, animations, logs) {
     camera: { position: camera.position.toArray(), target: target.toArray(), fov: camera.fov },
     animations: animations.map((clip) => THREE.AnimationClip.toJSON(clip)), logs,
   };
-  if (Buffer.byteLength(JSON.stringify(output)) > 220 * 1024) throw new Error("Scene output exceeds 220 KiB. Reduce geometry detail or object count.");
+  if (new TextEncoder().encode(JSON.stringify(output)).length > 220 * 1024) throw new Error("Scene output exceeds 220 KiB. Reduce geometry detail or object count.");
   return parseThreeExecution(output);
 }
 function execute(code) {
@@ -52,15 +50,17 @@ function execute(code) {
   const animations = [];
   const logs = [];
   const log = (...values) => { if (logs.length < 40) logs.push(values.map(logValue).join(" ").slice(0, 500)); };
-  const context = vm.createContext({ THREE, scene, camera, target, animations, console: Object.freeze({ log, info: log, warn: log, error: log }) }, {
-    codeGeneration: { strings: false, wasm: false }, microtaskMode: "afterEvaluate",
-  });
   try {
-    new vm.Script(`"use strict";\n${code}`, { filename: "article.threejs" }).runInContext(context, { timeout: 2000 });
+    new Function("THREE", "scene", "camera", "target", "animations", "console", `"use strict";\n${code}`)(THREE, scene, camera, target, animations, Object.freeze({log, info:log, warn:log, error:log}));
     return snapshot(scene, camera, target, animations, logs);
   } catch (error) {
     const message = error?.code === "ERR_SCRIPT_EXECUTION_TIMEOUT" ? "Three.js code exceeded its two-second execution limit." : String(error?.message ?? error);
     return { ok: false, logs, error: message.slice(0, 2000) };
   }
 }
-parentPort.postMessage(execute(workerData.code));
+// The opaque iframe CSP blocks network access; remove network/worker entry points
+// as defense in depth. This is browser isolation, never server code execution.
+for (const name of ["fetch", "XMLHttpRequest", "WebSocket", "EventSource", "importScripts", "Worker", "SharedWorker", "indexedDB", "caches", "process", "require"]) {
+  try { Object.defineProperty(globalThis, name, { value: undefined, configurable: false, writable: false }); } catch { /* The browser may already make it unavailable. */ }
+}
+self.onmessage = event => self.postMessage(execute(event.data.code));

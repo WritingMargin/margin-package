@@ -30,7 +30,7 @@ test("reader bridge rejects execution and changes; preview rejects changes", asy
     const f = fixture(mode);
     try {
       assert.throws(() => f.client.change("mutated"), /editor/);
-      if (mode === "read") await assert.rejects(f.client.action("text.count", {}), /Reader/);
+      if (mode === "read") await assert.rejects(f.client.action("text.count", {}), /readers/i);
     } finally { f.close(); }
   }
 });
@@ -78,7 +78,7 @@ test("cleanup and download use bounded messages without exposing browser privile
     assert.deepEqual((await cleared)[0], { type: "cleanup", action: null });
   } finally { f.close(); }
   const reader = fixture("read");
-  try { assert.throws(() => reader.client.setCleanup("session.close", {}), /Reader/); }
+  try { assert.throws(() => reader.client.setCleanup("session.close", {}), /readers/i); }
   finally { reader.close(); }
 });
 test("text imports use the host picker, preserve text, and permit explicit cancellation", async () => {
@@ -128,4 +128,17 @@ test("closing a block aborts a pending file chooser and rejects late delivery", 
     assert.equal((await cancelled)[0].type, "cancel");
     await rejected;
   } finally { f.close(); }
+});
+
+test("readers can invoke only the effective explicit HTTP allowlist",async()=>{
+ const {port1,port2}=new MessageChannel();
+ const client=new BlockClient(port1,{mode:"read",source:"{}",theme:{},actions:["api.request"],readerActions:["api.request"]});
+ try {
+  const incoming=once(port2,"message"),pending=client.action("api.request",{message:"hello"});
+  const [request]=await incoming;assert.equal(request.action,"api.request");
+  port2.postMessage({type:"result",id:request.id,output:{reply:"hello"}});
+  assert.deepEqual(await pending,{reply:"hello"});
+  await assert.rejects(client.action("private.execute",{}),/not available to readers/);
+  assert.throws(()=>client.change("changed"),/editor/);
+ }finally{client.close();port2.close();}
 });
